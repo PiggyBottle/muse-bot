@@ -11,6 +11,7 @@ __author__ = "Sora & Yarn & Valdars"
 #ideas: poll that has multiple answers, daily poll
 #to-implement: difflib.sequencematcher, closures, regex
 
+datapicklelocation = '/home/yj/Documents/data.pickle'
 
 
 def day_counter(date):
@@ -35,11 +36,10 @@ class main():
     def menu(self, word, word_eol, userdata):
         #added a space after @test to make sure @testt doesnt work
         if '@test ' == word[1][0:6]:
-            hexchat.command('say text hooked')
-            print(word[1][0:5])
+            
             return hexchat.EAT_ALL
         elif word[1].startswith('$anime '):
-            f = open('/home/yj/Documents/data.pickle','rb')
+            f = open(datapicklelocation,'rb')
             anime_showtime = pickle.load(f)['anime_showtime']
             f.close()
             for a in anime_showtime.keys():
@@ -76,19 +76,19 @@ class main():
             if not (timezone >= -12) and (timezone <= 14):
                 hexchat.command('say Error: Invalid time zone.')
                 return hexchat.EAT_ALL
-            f = open('/home/yj/Documents/data.pickle','rb')
+            f = open(datapicklelocation,'rb')
             data = pickle.load(f)
             f.close()
             name = str(word[0]).lower()
             data['usertimezones'][name] = timezone
-            f = open('/home/yj/Documents/data.pickle','wb')
+            f = open(datapicklelocation,'wb')
             pickle.dump(data,f)
             f.close()
             hexchat.command('say Timezone set to '+str(timezone)+', remember to update this when DST starts/ends!')
             return hexchat.EAT_ALL
 
         elif word[1].startswith('$time '):
-            f = open('/home/yj/Documents/data.pickle','rb')
+            f = open(datapicklelocation,'rb')
             data = pickle.load(f)
             f.close()
             found = False
@@ -119,11 +119,11 @@ class main():
             #hexchat.command('say .quote read 468')
 
         else:
-            f = open('/home/yj/Documents/data.pickle','rb')
+            f = open(datapicklelocation,'rb')
             data = pickle.load(f)
             f.close()
             data['active_users'][word[0]] = datetime.time()
-            f = open('/home/yj/Documents/data.pickle','wb')
+            f = open(datapicklelocation,'wb')
             pickle.dump(data,f)
             f.close()
             return hexchat.EAT_ALL
