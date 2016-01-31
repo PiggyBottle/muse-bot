@@ -8,7 +8,7 @@ __module_version__ = "1.0"
 __module_description__ = "Implemented state machine."
 __author__ = "Sora & Yarn & Valdars"
 
-#ideas: $settimezone, $timezone <name>, poll that has multiple answers, daily poll
+#ideas: poll that has multiple answers, daily poll
 #to-implement: difflib.sequencematcher, closures, regex
 
 
@@ -91,15 +91,27 @@ class main():
             f = open('/home/yj/Documents/data.pickle','rb')
             data = pickle.load(f)
             f.close()
-            try:
-                name = str(word[1][6:]).replace(' ','').lower()
-                timezone = data['usertimezones'][name]
-            except:
-                hexchat.command('say Either this person has not registered, or such person does not exist.')
-                hexchat.prnt(str(word[1][6:]))
+            found = False
+            if len(word[1][6:]) == 0:
+                hexchat.command('say Error: Please enter a user\'s name.')
                 return hexchat.EAT_ALL
-            hexchat.command('say ' + str(datetime.datetime.utcnow()+datetime.timedelta(hours=timezone)))
-            
+            for a in data['usertimezones'].keys():
+                if word[1][6:].lower().replace(' ','') in a:
+                    found = True
+                    timezone = data['usertimezones'][a]
+                    time = datetime.datetime.utcnow() + datetime.timedelta(hours=timezone)
+                    if time.hour < 10:
+                        hour_zero = str(0)
+                    else:
+                        hour_zero = ''
+                    if time.minute < 10:
+                        minute_zero = str(0)
+                    else:
+                        minute_zero = ''
+                    hexchat.command('say It is currently '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+str(a)+'\'s country.')
+                    break
+            if found == False:
+                hexchat.command('say Either this person has not registered, or such person does not exist.')
             
             return hexchat.EAT_ALL
             
@@ -110,7 +122,7 @@ class main():
             f = open('/home/yj/Documents/data.pickle','rb')
             data = pickle.load(f)
             f.close()
-            data['active_users'][word[0]] = time.time()
+            data['active_users'][word[0]] = datetime.time()
             f = open('/home/yj/Documents/data.pickle','wb')
             pickle.dump(data,f)
             f.close()
