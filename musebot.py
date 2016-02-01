@@ -152,7 +152,7 @@ class TimeZoneCheck():
         except:
             hexchat.command('say That is not a number!')
             return hexchat.EAT_ALL
-        if not (timezone >= -12) and (timezone <= 14):
+        if not ((timezone >= -12) and (timezone <= 14)):
             hexchat.command('say Error: Invalid time zone.')
             return hexchat.EAT_ALL
         f = open(datapicklelocation,'rb')
