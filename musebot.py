@@ -35,7 +35,7 @@ class StateManager():
             self.t = threading.Timer(15, self.poll_complete)
             self.t.start()
             return hexchat.EAT_ALL
-        elif word[1][0:13] == '$settimezone ' or word[1].startswith('$time '):
+        elif word[1][0:13] == '$settimezone ' or word[1].startswith('$time'):
             self.function = TimeZoneCheck(word[1], word[0].lower())
             self.function = None
             return hexchat.EAT_ALL
@@ -145,6 +145,8 @@ class TimeZoneCheck():
             self.set_time(self.name, self.word[13:])
         elif self.word.startswith('$time '):
             self.read_time(self.word[6:])
+        elif self.word == '$time':
+            self.read_time(self.name)
         
     def set_time(self, name, tz):
         try:
@@ -186,7 +188,7 @@ class TimeZoneCheck():
                     minute_zero = str(0)
                 else:
                     minute_zero = ''
-                hexchat.command('say It is currently '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+str(a)+'\'s country.')
+                hexchat.command('say It is currently '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+str(a)+'\'s time zone.')
                 break
         if found == False:
             hexchat.command('say Either this person has not registered, or such person does not exist.')
