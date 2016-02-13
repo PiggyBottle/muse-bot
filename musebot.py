@@ -65,7 +65,7 @@ class AnimeTiming():
         try:
             self.days, self.hours, self.minutes, self.title = self.time_left(self.word)
             if self.days == 6:
-                hexchat.command('say '+self.title+' subs has just recently been released. Check it out now!')
+                hexchat.command('say '+self.title+' subs have just recently been released. Check it out now!')
             else:
                 hexchat.command('say %s subs will be released in %d days, %d hours and %d minutes.' %(self.title, self.days,self.hours,self.minutes))
         except:
@@ -150,10 +150,9 @@ class TimeZoneCheck():
         
     def set_time(self, name, tz):
         try:
-            timezone = int(tz)
+            timezone = float(tz)
         except:
-            hexchat.command('say That is not a number!')
-            return hexchat.EAT_ALL
+            hexchat.command('say Error, that is not a number!')
         if not ((timezone >= -12) and (timezone <= 14)):
             hexchat.command('say Error: Invalid time zone.')
             return hexchat.EAT_ALL
