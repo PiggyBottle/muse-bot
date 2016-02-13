@@ -8,7 +8,7 @@ __module_version__ = "1.0"
 __module_description__ = "Implemented state machine."
 __author__ = "Sora & Yarn & Valdars"
 
-datapicklelocation = '/home/yj/Documents/data.pickle'
+datapicklelocation = 'D:\Documents\muse-bot\data.pickle'
 
 
 class StateManager():
@@ -26,7 +26,7 @@ class StateManager():
             hexchat.prnt('Success')
             return hexchat.EAT_ALL
         elif word[1].startswith('$anime '):
-            self.function = AnimeTiming(word[1][6:])
+            self.function = AnimeTiming(word[1][7:])
             self.function = None
             return hexchat.EAT_ALL
         elif word[1].startswith('$poll '):
@@ -91,8 +91,8 @@ class AnimeTiming():
         anime_showtime = pickle.load(f)['anime_showtime']
         f.close()
         for a in anime_showtime.keys():
-            if a in w.lower():
-                days = self.day_counter(anime_showtime[a][0])
+            if w.lower() in a:
+                days =self.day_counter(anime_showtime[a][0])
                 hours = anime_showtime[a][1] - datetime.datetime.today().hour
                 minutes = anime_showtime[a][2] - datetime.datetime.today().minute
                 if minutes < 0:
