@@ -39,6 +39,11 @@ class StateManager():
             self.function = TimeZoneCheck(word[1], word[0].lower())
             self.function = None
             return hexchat.EAT_ALL
+        elif word[1].startswith('$money'):
+            self.function = Money()
+            hexchat.command('say %s has %d NanoDollars.' %(word[0], self.function.check(word[0].lower())))
+            self.function = None
+            return hexchat.EAT_ALL
         else:
             self.setactiveuser(word[0])
             return hexchat.EAT_ALL
@@ -192,6 +197,26 @@ class TimeZoneCheck():
         if found == False:
             hexchat.command('say Either this person has not registered, or such person does not exist.')
         return hexchat.EAT_ALL
+
+class Money():
+    def __init__(self):
+        pass
+    def check(self, name):
+        #remember to input name in .lower()
+        f = open(datapicklelocation,'rb')
+        data = pickle.load(f)['money']
+        f.close()
+        if name in data.keys():
+            return data[name]
+        else:
+            f = open(datapicklelocation,'rb')
+            data = pickle.load(f)
+            f.close()
+            data['money'][name] = 10
+            f = open(datapicklelocation,'wb')
+            pickle.dump(data,f)
+            f.close()
+            return 10
 
 
 
