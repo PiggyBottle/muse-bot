@@ -30,6 +30,11 @@ class StateManager():
             self.preblackjack(word, word_eol, userdata)
         if self.state == 'blackjackbet':
             self.blackjackbet(word, word_eol, userdata)
+        if self.state == 'blackjackmain':
+            self.blackjackmain(word, word_eol, userdata)
+        if self.state == 'postblackjack':
+            self.postblackjack(word, word_eol, userdata)
+        hexchat.EAT_ALL
     def main_menu(self, word, word_eol, userdata):
         if '@test ' == word[1][0:6]:
             hexchat.prnt('Success')
@@ -60,9 +65,8 @@ class StateManager():
             self.function = blackjack.Game()
             self.add_blackjack_player(word[0].lower())
             #temporarily setted timer to 1 sec for debugging
-            self.t = threading.Timer(1, self.goto_blackjack_bet)
+            self.t = threading.Timer(10, self.goto_blackjack_bet)
             self.t.start()
-            return hexchat.EAT_ALL
         else:
             self.setactiveuser(word[0])
             return hexchat.EAT_ALL
@@ -75,7 +79,7 @@ class StateManager():
             word[1] = int(word[1])
         except:
             return hexchat.EAT_ALL
-        if word[0].lower() in self.function.betsremaining:
+        if word[0].lower() in self.function.betsremaining and word[1] > 0:
             a = self.function.addbet(word[0].lower(), int(word[1]))
             if a == False:
                 hexchat.command('say You do not have enough money!')
@@ -84,6 +88,44 @@ class StateManager():
                 del self.function.betsremaining[self.function.betsremaining.index(word[0].lower())]
         if len(self.function.betsremaining) == 0:
             self.start_blackjack()
+        return hexchat.EAT_ALL
+    def blackjackmain(self, word, word_eol, userdata):
+        #amend the list with new commands to include triggers
+        if word[1] == '$quit':
+            self.state = 'main_menu'
+            self.function = None
+        elif word[0].lower() == self.function.turnorder[0] and word[1] in ['$stand', '$hit']:
+            bust, nextturn = self.function.main(word[0].lower(), word[1])
+            if not '$stand' in word[1]:
+                hexchat.command('say %s : %s' %(word[0], self.function.player_hand(word[0].lower())))
+            if bust:
+                hexchat.command('say Busted!')
+            if nextturn:
+                del self.function.turnorder[0]
+                if len(self.function.turnorder) > 1:
+                    hexchat.command('say %s\'s turn!' %(self.function.turnorder[0]))
+                    hexchat.command('say %s : %s' %(self.function.turnorder[0], self.function.player_hand(self.function.turnorder[0])))
+                    hexchat.command('say %s : %s' %('Dealer', self.function.players[len(self.function.players)-1].show_hand()))
+
+                else:
+                    dealer_hand = self.function.dealer_draw()
+                    hexchat.command('say All players have played.')
+                    for a in self.function.players[0:len(self.function.players)-1]:
+                        hexchat.command('say %s : %s' %(a.name, a.show_hand()))
+                    hexchat.command('say Dealer: %s' %(dealer_hand))
+                    hexchat.command('say Here\'s the current amount of money you have left:')
+                    for a in self.function.players[0:len(self.function.players)-1]:
+                        hexchat.command('say %s : %s' %(a.name, str(a.money)))
+                    self.save_blackjack()
+                    hexchat.command('say Select $quit or $continue. (Players who are broke will be removed.')
+                    self.state = 'postblackjack'
+        return hexchat.EAT_ALL
+    def postblackjack(self, word, word_eol, userdata):
+        if word[1].startswith('$quit'):
+            self.state = 'main_menu'
+            self.function = None
+        elif word[1].startswith('$continue'):
+            pass
         return hexchat.EAT_ALL
     def setactiveuser(self,w):       
         f = open(datapicklelocation,'rb')
@@ -106,7 +148,6 @@ class StateManager():
         hexchat.command('say '+str(self.function.betsremaining))
         hexchat.command('say Betting phase. Please input your bets in integer numbers.')
         self.state = 'blackjackbet'
-
     def start_blackjack(self):
         self.function.start_game()
         for a in self.function.players:
@@ -114,7 +155,8 @@ class StateManager():
                 hexchat.command('say Dealer : %s' %(a.hand[0][0]))
             else:
                 hexchat.command('say %s : %s' %(a.name, a.show_hand()))
-        self.state = 'main_menu'
+        hexchat.command('say $hit, $stand or $quit.')
+        self.state = 'blackjackmain'
     def add_blackjack_player(self, name):
         a = Money()
         #"name == 'dealer' is included to prevent game-breaking bug
@@ -125,6 +167,19 @@ class StateManager():
         else:
             hexchat.command('say Error, player has no money!')
         return hexchat.EAT_ALL
+    def save_blackjack(self):
+        savedata = self.function.generate_savedata()
+        f = open(datapicklelocation, 'rb')
+        data = pickle.load(f)
+        f.close()
+        for a in savedata.keys():
+            data['money'][a] = savedata[a]
+        f = open(datapicklelocation, 'wb')
+        pickle.dump(data, f)
+        f.close()
+
+
+    
 class AnimeTiming():
     def __init__(self, w):
         self.word = w
