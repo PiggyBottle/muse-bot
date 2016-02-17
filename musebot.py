@@ -3,6 +3,10 @@ import time
 import pickle
 import threading
 import hexchat
+import sys
+sys.path.insert(0,"D:\Documents\muse-bot")
+import blackjack
+
 __module_name__ = "Hexchat Muse"
 __module_version__ = "1.0"
 __module_description__ = "Implemented state machine."
@@ -10,6 +14,7 @@ __author__ = "Sora & Yarn & Valdars"
 
 datapicklelocation = 'D:\Documents\muse-bot\data.pickle'
 
+#known bug: $poll doesnt work when bot is pinged
 
 class StateManager():
     def __init__(self):
@@ -21,6 +26,10 @@ class StateManager():
             self.main_menu(word, word_eol, userdata)
         if self.state == 'poll':
             self.poll(word, word_eol, userdata)
+        if self.state == 'preblackjack':
+            self.preblackjack(word, word_eol, userdata)
+        if self.state == 'blackjackbet':
+            self.blackjackbet(word, word_eol, userdata)
     def main_menu(self, word, word_eol, userdata):
         if '@test ' == word[1][0:6]:
             hexchat.prnt('Success')
@@ -44,10 +53,38 @@ class StateManager():
             hexchat.command('say %s has %d NanoDollars.' %(word[0], self.function.check(word[0].lower())))
             self.function = None
             return hexchat.EAT_ALL
+        elif word[1].startswith('$blackjack'):
+            self.state = 'preblackjack'
+            hexchat.command('me puts on a tuxedo and sets up the table.')
+            hexchat.command('say %s has started a game of blackjack! Everyone has 10 seconds to $join in!' %(word[0]))
+            self.function = blackjack.Game()
+            self.add_blackjack_player(word[0].lower())
+            #temporarily setted timer to 1 sec for debugging
+            self.t = threading.Timer(1, self.goto_blackjack_bet)
+            self.t.start()
+            return hexchat.EAT_ALL
         else:
             self.setactiveuser(word[0])
             return hexchat.EAT_ALL
-
+    def preblackjack(self, word, word_eol, userdata):
+        if word[1].startswith('$join'):
+            self.add_blackjack_player(word[0].lower())
+            return hexchat.EAT_ALL
+    def blackjackbet(self, word, word_eol, userdata):
+        try:
+            word[1] = int(word[1])
+        except:
+            return hexchat.EAT_ALL
+        if word[0].lower() in self.function.betsremaining:
+            a = self.function.addbet(word[0].lower(), int(word[1]))
+            if a == False:
+                hexchat.command('say You do not have enough money!')
+                return hexchat.EAT_ALL
+            elif a == True:
+                del self.function.betsremaining[self.function.betsremaining.index(word[0].lower())]
+        if len(self.function.betsremaining) == 0:
+            self.start_blackjack()
+        return hexchat.EAT_ALL
     def setactiveuser(self,w):       
         f = open(datapicklelocation,'rb')
         data = pickle.load(f)
@@ -62,7 +99,32 @@ class StateManager():
         self.function.complete()
         self.state = 'main_menu'
         self.function = None
-        
+    def goto_blackjack_bet(self):
+        self.function.betsremaining = []
+        for a in self.function.playernames:
+            self.function.betsremaining.append(a)
+        hexchat.command('say '+str(self.function.betsremaining))
+        hexchat.command('say Betting phase. Please input your bets in integer numbers.')
+        self.state = 'blackjackbet'
+
+    def start_blackjack(self):
+        self.function.start_game()
+        for a in self.function.players:
+            if a.name == 'dealer':
+                hexchat.command('say Dealer : %s' %(a.hand[0][0]))
+            else:
+                hexchat.command('say %s : %s' %(a.name, a.show_hand()))
+        self.state = 'main_menu'
+    def add_blackjack_player(self, name):
+        a = Money()
+        #"name == 'dealer' is included to prevent game-breaking bug
+        if name in self.function.playernames or name == 'dealer':
+            return hexchat.EAT_ALL
+        if a.check(name) > 0:
+            self.function.add_player(name, a.check(name))
+        else:
+            hexchat.command('say Error, player has no money!')
+        return hexchat.EAT_ALL
 class AnimeTiming():
     def __init__(self, w):
         self.word = w
