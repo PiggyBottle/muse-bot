@@ -105,7 +105,7 @@ class StateManager():
                 if len(self.function.turnorder) > 1:
                     hexchat.command('say %s\'s turn!' %(self.function.turnorder[0]))
                     hexchat.command('say %s : %s' %(self.function.turnorder[0], self.function.player_hand(self.function.turnorder[0])))
-                    hexchat.command('say %s : %s' %('Dealer', self.function.players[len(self.function.players)-1].show_hand()))
+                    hexchat.command('say %s : %s' %('Dealer', self.function.players[len(self.function.players)-1].hand[0][0]))
 
                 else:
                     dealer_hand = self.function.dealer_draw()
@@ -117,7 +117,7 @@ class StateManager():
                     for a in self.function.players[0:len(self.function.players)-1]:
                         hexchat.command('say %s : %s' %(a.name, str(a.money)))
                     self.save_blackjack()
-                    hexchat.command('say Select $quit or $continue. (Players who are broke will be removed.')
+                    hexchat.command('say Select $quit or $continue. (Players who are broke will be removed.)')
                     self.state = 'postblackjack'
         return hexchat.EAT_ALL
     def postblackjack(self, word, word_eol, userdata):
@@ -125,7 +125,10 @@ class StateManager():
             self.state = 'main_menu'
             self.function = None
         elif word[1].startswith('$continue'):
-            pass
+            self.function.restart_game()
+            self.state = 'blackjackbet'
+            hexchat.command('say '+str(self.function.betsremaining))
+            hexchat.command('say Betting phase. Please input your bets in integer numbers.')
         return hexchat.EAT_ALL
     def setactiveuser(self,w):       
         f = open(datapicklelocation,'rb')
@@ -142,13 +145,14 @@ class StateManager():
         self.state = 'main_menu'
         self.function = None
     def goto_blackjack_bet(self):
+        self.state = 'blackjackbet'
         self.function.betsremaining = []
         for a in self.function.playernames:
             self.function.betsremaining.append(a)
         hexchat.command('say '+str(self.function.betsremaining))
         hexchat.command('say Betting phase. Please input your bets in integer numbers.')
-        self.state = 'blackjackbet'
     def start_blackjack(self):
+        self.state = 'blackjackmain'
         self.function.start_game()
         for a in self.function.players:
             if a.name == 'dealer':
@@ -156,7 +160,6 @@ class StateManager():
             else:
                 hexchat.command('say %s : %s' %(a.name, a.show_hand()))
         hexchat.command('say $hit, $stand or $quit.')
-        self.state = 'blackjackmain'
     def add_blackjack_player(self, name):
         a = Money()
         #"name == 'dealer' is included to prevent game-breaking bug

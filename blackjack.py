@@ -39,13 +39,12 @@ class Game():
                 if command.startswith('$hit'):
                     return a.hit(self.deck.pop())
                 elif command.startswith('$stand'):
-                    
                     return (False, True)
-
     def dealer_draw(self):
         while self.players[len(self.players)-1].check_value(self.players[len(self.players)-1].hand[0]) < 17:
             self.players[len(self.players)-1].hand[0].append(self.deck.pop())
         self.dealer_hand_value = self.players[len(self.players)-1].check_value(self.players[len(self.players)-1].hand[0])
+        print(self.dealer_hand_value)
         if self.dealer_hand_value > 21:
             self.dealer_bust = True
         else:
@@ -76,17 +75,32 @@ class Game():
                     a.bet = 0
                 else:
                     a.bet = 0
-            print(a.money)
         return self.players[len(self.players)-1].show_hand()
     def generate_savedata(self):
         savedata = {}
         for a in self.players[0:len(self.players)-1]:
             savedata[a.name] = a.money
         return savedata
-
-
-        
-
+    def restart_game(self):
+        self.deck = generate_deck()
+        temp = []
+        self.playernames = []
+        self.betsremaining = []
+        self.turnorder = []
+        for a in self.players:
+            if a.name == 'dealer':
+                pass
+            elif a.money == 0:
+                pass
+            else:
+                a.hand = []
+                self.betsremaining.append(a.name)
+                self.playernames.append(a.name)
+                temp.append(a)
+                self.turnorder.append(a.name)
+        self.players = []
+        for a in temp:
+            self.players.append(a)
 
 
 class Player():
