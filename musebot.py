@@ -61,12 +61,9 @@ class StateManager():
         elif word[1].startswith('$blackjack'):
             self.state = 'preblackjack'
             hexchat.command('me puts on a tuxedo and sets up the table.')
-            hexchat.command('say %s has started a game of blackjack! Everyone has 10 seconds to $join in!' %(word[0]))
+            hexchat.command('say %s has started a game of blackjack! Everyone is free to $join in! (Once ready, press $start)' %(word[0]))
             self.function = blackjack.Game()
             self.add_blackjack_player(word[0].lower())
-            #temporarily setted timer to 1 sec for debugging
-            self.t = threading.Timer(10, self.goto_blackjack_bet)
-            self.t.start()
         else:
             self.setactiveuser(word[0])
             return hexchat.EAT_ALL
@@ -74,6 +71,8 @@ class StateManager():
         if word[1].startswith('$join'):
             self.add_blackjack_player(word[0].lower())
             return hexchat.EAT_ALL
+        elif word[1].startswith('$start'):
+            self.goto_blackjack_bet()
     def blackjackbet(self, word, word_eol, userdata):
         try:
             word[1] = int(word[1])
@@ -126,9 +125,15 @@ class StateManager():
             self.function = None
         elif word[1].startswith('$continue'):
             self.function.restart_game()
-            self.state = 'blackjackbet'
-            hexchat.command('say '+str(self.function.betsremaining))
-            hexchat.command('say Betting phase. Please input your bets in integer numbers.')
+            if len(self.function.players) < 1:
+                self.state = 'main_menu'
+                hexchat.command('say Everyone\'s broke!')
+                hexchat.command('say Exiting game.')
+                self.function = None
+            else:
+                self.state = 'blackjackbet'
+                hexchat.command('say '+str(self.function.betsremaining))
+                hexchat.command('say Betting phase. Please input your bets in integer numbers.')
         return hexchat.EAT_ALL
     def setactiveuser(self,w):       
         f = open(datapicklelocation,'rb')
