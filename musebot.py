@@ -40,6 +40,8 @@ class StateManager():
             hexchat.prnt('Success')
             return hexchat.EAT_ALL
         elif word[1].startswith('$anime '):
+            if len(word[1]) == 7:
+                return hexchat.EAT_ALL
             self.function = AnimeTiming(word[1][7:])
             self.function = None
             return hexchat.EAT_ALL
@@ -93,25 +95,28 @@ class StateManager():
         if word[1] == '$quit':
             self.state = 'main_menu'
             self.function = None
-        elif word[0].lower() == self.function.turnorder[0] and word[1] in ['$stand', '$hit']:
+        elif word[0].lower() == self.function.turnorder[0] and word[1] in ['$stand', '$hit', '$doubledown']:
+            if '$doubledown' in word[1] and not self.function.can_doubledown():
+                hexchat.command('say You do not have enough money!')
+                return hexchat.EAT_ALL
             bust, nextturn = self.function.main(word[0].lower(), word[1])
             if not '$stand' in word[1]:
-                hexchat.command('say %s : %s' %(word[0], self.function.player_hand(word[0].lower())))
+                hexchat.command('say %s (%d): %s' %(word[0], self.function.player_hand_value(self.function.turnorder[0]), self.function.player_hand(word[0].lower())))
             if bust:
                 hexchat.command('say Busted!')
             if nextturn:
                 del self.function.turnorder[0]
                 if len(self.function.turnorder) > 1:
                     hexchat.command('say %s\'s turn!' %(self.function.turnorder[0]))
-                    hexchat.command('say %s : %s' %(self.function.turnorder[0], self.function.player_hand(self.function.turnorder[0])))
+                    hexchat.command('say %s (%d): %s' %(self.function.turnorder[0], self.function.player_hand_value(self.function.turnorder[0]), self.function.player_hand(self.function.turnorder[0])))
                     hexchat.command('say %s : %s' %('Dealer', self.function.players[len(self.function.players)-1].hand[0][0]))
 
                 else:
-                    dealer_hand = self.function.dealer_draw()
+                    dealer_hand, dealer_value = self.function.dealer_draw()
                     hexchat.command('say All players have played.')
                     for a in self.function.players[0:len(self.function.players)-1]:
-                        hexchat.command('say %s : %s' %(a.name, a.show_hand()))
-                    hexchat.command('say Dealer: %s' %(dealer_hand))
+                        hexchat.command('say %s (%d): %s' %(a.name, a.check_value(a.hand[0]), a.show_hand()))
+                    hexchat.command('say Dealer (%d): %s' %(dealer_value, dealer_hand))
                     hexchat.command('say Here\'s the current amount of money you have left:')
                     for a in self.function.players[0:len(self.function.players)-1]:
                         hexchat.command('say %s : %s' %(a.name, str(a.money)))
@@ -163,7 +168,7 @@ class StateManager():
             if a.name == 'dealer':
                 hexchat.command('say Dealer : %s' %(a.hand[0][0]))
             else:
-                hexchat.command('say %s : %s' %(a.name, a.show_hand()))
+                hexchat.command('say %s (%d): %s' %(a.name, self.function.player_hand_value(a.name), a.show_hand()))
         hexchat.command('say $hit, $stand or $quit.')
     def add_blackjack_player(self, name):
         a = Money()
@@ -173,6 +178,9 @@ class StateManager():
         if a.check(name) > 0:
             self.function.add_player(name, a.check(name))
         else:
+            if len(self.function.players) == 0:
+                self.state = 'main_menu'
+                self.function = None
             hexchat.command('say Error, player has no money!')
         return hexchat.EAT_ALL
     def save_blackjack(self):

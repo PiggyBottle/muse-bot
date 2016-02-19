@@ -33,6 +33,14 @@ class Game():
         for a in self.players:
             if name == a.name:
                 return a.show_hand()
+    def player_hand_value(self, name):
+        for a in self.players:
+            if name == a.name:
+                return a.check_value(a.hand[0])
+    def can_doubledown(self):
+        for a in self.players:
+            if a.name == self.turnorder[0]:
+                return a.money > a.bet
     def main(self, name, command):
         for a in self.players:
             if a.name == name:
@@ -40,6 +48,8 @@ class Game():
                     return a.hit(self.deck.pop())
                 elif command.startswith('$stand'):
                     return (False, True)
+                elif command.startswith('$doubledown'):
+                    return a.doubledown(self.deck.pop())
     def dealer_draw(self):
         while self.players[len(self.players)-1].check_value(self.players[len(self.players)-1].hand[0]) < 17:
             self.players[len(self.players)-1].hand[0].append(self.deck.pop())
@@ -75,7 +85,7 @@ class Game():
                     a.bet = 0
                 else:
                     a.bet = 0
-        return self.players[len(self.players)-1].show_hand()
+        return (self.players[len(self.players)-1].show_hand(), self.players[len(self.players)-1].check_value(self.players[len(self.players)-1].hand[0]))
     def generate_savedata(self):
         savedata = {}
         for a in self.players[0:len(self.players)-1]:
@@ -116,6 +126,14 @@ class Player():
         self.hand[0].append(card)
         if self.check_value(self.hand[0]) < 22:
             bust_and_nextturn = (False, False)
+        else:
+            self.bet = 0
+            bust_and_nextturn = (True, True)
+        return bust_and_nextturn
+    def doubledown(self, card):
+        self.hand[0].append(card)
+        if self.check_value(self.hand[0]) < 22:
+            bust_and_nextturn = (False, True)
         else:
             self.bet = 0
             bust_and_nextturn = (True, True)
