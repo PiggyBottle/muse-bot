@@ -132,6 +132,8 @@ class Player():
         return bust_and_nextturn
     def doubledown(self, card):
         self.hand[0].append(card)
+        self.money -= self.bet
+        self.bet = 2 * self.bet
         if self.check_value(self.hand[0]) < 22:
             bust_and_nextturn = (False, True)
         else:

@@ -169,7 +169,7 @@ class StateManager():
                 hexchat.command('say Dealer : %s' %(a.hand[0][0]))
             else:
                 hexchat.command('say %s (%d): %s' %(a.name, self.function.player_hand_value(a.name), a.show_hand()))
-        hexchat.command('say $hit, $stand or $quit.')
+        hexchat.command('say $hit, $doubledown, $stand or $quit.')
     def add_blackjack_player(self, name):
         a = Money()
         #"name == 'dealer' is included to prevent game-breaking bug
