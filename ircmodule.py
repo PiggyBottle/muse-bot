@@ -79,6 +79,9 @@ class IRC(threading.Thread):
             dict['message'] = 'was kicked by %s' %(dict['name'])
             dict['channel'] = text[1].split('KICK ')[1].split(' ')[0]
             dict['name'] = text[1].split('KICK ')[1].split(' ')[1]
+            if dict['name'] == self.botnick:
+                text = 'JOIN '+self.channel+'\n'
+                self.irc.send(text.encode())
         else:
             dict['channel'], dict['type'] = (None,None)
         return dict
