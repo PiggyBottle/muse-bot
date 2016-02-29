@@ -8,7 +8,7 @@ class IRC(threading.Thread):
         threading.Thread.__init__(self)
         self.server = "irc.rizon.net"       #settings
         self.channel = "#nanodesu"
-        self.botnick = "Muse-chan-clone"
+        self.botnick = "Muse-chan"
         self.inputs = queue.Queue()
         self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.irc.connect((self.server, 6667))
@@ -33,8 +33,10 @@ class IRC(threading.Thread):
             pong = 'PONG ' + text.split()[1] + '\r\n'
             if text.find('PING :') != -1:   #check if 'PING' is found
                 self.irc.send(pong.encode())    #returns 'PONG' back to the server (prevents pinging out!)
-            elif not self.formatter(text)['type'] == None:   #Only registering recognized events. (JOIN, PRIVMSG)
-                self.inputs.put(self.formatter(text))
+            else:
+                formatted_text = self.formatter(text)
+                if not formatted_text['type'] == None:
+                    self.inputs.put(formatted_text)
     def send(self, dict):
         if dict is None:
             return
@@ -61,6 +63,22 @@ class IRC(threading.Thread):
             dict['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
             dict['channel'] = text[2]
             dict['message'] = ''
+        elif 'QUIT' in text[1]:
+            dict['type'] = 'QUIT'
+            dict['message'] = ''
+            dict['channel'] = self.channel
+        elif 'PART' in text[1]:
+            dict['type'] = 'PART'
+            dict['channel'] = text[1].split('PART ')[1].split(' ')[0]
+            dict['message'] = ''
+        elif 'NICK' in text[1]:
+            dict['type'] = 'NICK'   #old name is dict['name'], new name is dict['message']
+        elif 'KICK' in text[1]:
+            #dict['name'] is the guy who was kicked, and the kicker is in the message
+            dict['type'] = 'KICK'
+            dict['message'] = 'was kicked by %s' %(dict['name'])
+            dict['channel'] = text[1].split('KICK ')[1].split(' ')[0]
+            dict['name'] = text[1].split('KICK ')[1].split(' ')[1]
         else:
             dict['channel'], dict['type'] = (None,None)
         return dict

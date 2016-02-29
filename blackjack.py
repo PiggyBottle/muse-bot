@@ -164,7 +164,6 @@ class Game():
                     player.active_hand_number = 2
                 else:
                     player.active_hand_number = 1
-                print(player.active_hand_number)
             buffer += 'Hand has been split. $hit, $doubledown or $stand.'
             dict['message'] = buffer
             return dict
