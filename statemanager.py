@@ -4,6 +4,8 @@ import threading
 import poll
 import money
 import blackjack
+import logger
+import spamguard
 
 
 
@@ -14,7 +16,17 @@ class StateManager():
         self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True}
         #remember to add self.dpl into functions that need pickle!
         self.dpl = 'D:\Documents\muse-bot\data.pickle'
+        self.logger = logger.Logger(self.dpl)
+        self.spamguard = spamguard.SpamGuard()
     def main(self, dict):
+        dict, permissions = self.spamguard.check(dict)
+        print(dict)
+        if dict['message'].startswith('SpamGuard'):
+            return dict
+        if not permissions == 'block':
+            self.logger.log(dict)
+        if not permissions == 'open':
+            return
         message = dict['message']
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming()
@@ -55,4 +67,7 @@ class StateManager():
                 dict['message'] = 'Game closed.'
                 return dict
             return self.function.execute(dict)
+        elif message.startswith('$log'):
+            dict = self.logger.read(dict)
+            return dict
         
