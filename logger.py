@@ -28,26 +28,33 @@ class Logger():
         a = usertimes.TimeZoneCheck()
         tz = a.get_raw_timezone(self.dpl,dict['name'].lower())
         if tz == None:
-            return
+            dict['message'] = 'Set your timezone first! $settimezone <number>'
+            return dict
         f = open(self.lpl, 'rb')
         data = pickle.load(f)
         f.close()
-        f = open(self.logstxt, 'wb')
-        for a in data['#nanodesu']:
-            f.write(self.display_time(a['time'],tz).encode())
+        log = ''
+        for a in reversed(data['#nanodesu']):
+            buffer = ''
+            buffer += self.display_time(a['time'],tz)
             if a['type'] == 'PRIVMSG':
-                f.write(('%s|%s\r\n' %(self.display_name(a['name']), a['message'])).encode())
+                buffer += '%s|%s\r\n' %(self.display_name(a['name']), a['message'])
             elif a['type'] == 'JOIN':
-                f.write(('%s%s has joined the channel.\r\n' %(self.display_name(None), a['name'])).encode())
+                buffer += '%s%s has joined the channel.\r\n' %(self.display_name(None), a['name'])
             elif a['type'] == 'PART':
-                f.write(('%s%s has parted from the channel.\r\n' %(self.display_name(None), a['name'])).encode())
+                buffer += '%s%s has parted from the channel.\r\n' %(self.display_name(None), a['name'])
+                if a['name'] == dict['name']:
+                    log = buffer + log
+                    break
             elif a['type'] == 'QUIT':
-                f.write(('%s%s has left the channel.\r\n' %(self.display_name(None), a['name'])).encode())
+                buffer += '%s%s has left the channel.\r\n' %(self.display_name(None), a['name'])
+                if a['name'] == dict['name']:
+                    log = buffer + log
+                    break
             elif a['type'] == 'NICK':
-                f.write(('%s%s has changed his nick to %s.\r\n' %(self.display_name(None), a['name'],a['message'])).encode())
-        f.close()
-        f = open('D:\Documents\muse-bot\logs.txt', 'r')
-        a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':f.read()}
+                buffer += '%s%s has changed his nick to %s.\r\n' %(self.display_name(None), a['name'],a['message'])
+            log = buffer + log
+        a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':log}
         json.dumps(a)
         url = 'https://paste.ee/api'
         b = urllib.parse.urlencode(a).encode('utf-8')

@@ -8,7 +8,7 @@ class IRC(threading.Thread):
         threading.Thread.__init__(self)
         self.server = "irc.rizon.net"       #settings
         self.channel = "#nanodesu"
-        self.botnick = "Muse-cha"
+        self.botnick = "Muse-chan"
         self.inputs = queue.Queue()
         self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.irc.connect((self.server, 6667))
@@ -61,7 +61,7 @@ class IRC(threading.Thread):
                 dict['private_messaged'] = True
         elif 'JOIN' in text[1]:
             dict['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
-            dict['channel'] = text[2].rstrip('\r\n')
+            dict['channel'] = text[2].split('\r\n')[0]
             dict['message'] = ''
         elif 'QUIT' in text[1]:
             dict['type'] = 'QUIT'
@@ -84,6 +84,11 @@ class IRC(threading.Thread):
             if dict['name'] == self.botnick:
                 text = 'JOIN '+self.channel+'\n'
                 self.irc.send(text.encode())
+        elif 'MODE' in text[1]:     #temporary placeholder
+            dict['type'] = 'MODE'
+            dict['message'] = ''
+            dict['name'] = ''
+            dict['channel'] = None
         else:
             dict['channel'], dict['type'] = (None,None)
         return dict

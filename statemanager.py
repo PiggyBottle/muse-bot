@@ -20,7 +20,6 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
     def main(self, dict):
         dict, permissions = self.spamguard.check(dict)
-        print(dict)
         if dict['message'].startswith('SpamGuard'):
             return dict
         if not permissions == 'block':
