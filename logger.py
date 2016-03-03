@@ -1,7 +1,7 @@
 import datetime
 import time
 import pickle
-from Pastebin import PastebinAPI
+#from Pastebin import PastebinAPI
 import json
 import urllib.request
 import urllib.parse
@@ -9,11 +9,10 @@ import usertimes
 
 
 class Logger():
-    def __init__(self,dpl):
-        self.lpl = 'D:\Documents\muse-bot\logs.pickle'
+    def __init__(self,dpl,lpl):
         self.logstxt = 'D:\Documents\muse-bot\logs.txt'
-        self.pastebin = PastebinAPI()
         self.dpl = dpl
+        self.lpl = lpl
     def log(self, dict):
         dict['time'] = datetime.datetime.utcnow()
         f = open(self.lpl, 'rb')
@@ -43,12 +42,12 @@ class Logger():
                 buffer += '%s%s has joined the channel.\r\n' %(self.display_name(None), a['name'])
             elif a['type'] == 'PART':
                 buffer += '%s%s has parted from the channel.\r\n' %(self.display_name(None), a['name'])
-                if a['name'] == dict['name']:
+                if a['name'].lower() == dict['name'].lower():
                     log = buffer + log
                     break
             elif a['type'] == 'QUIT':
                 buffer += '%s%s has left the channel.\r\n' %(self.display_name(None), a['name'])
-                if a['name'] == dict['name']:
+                if a['name'].lower() == dict['name'].lower():
                     log = buffer + log
                     break
             elif a['type'] == 'NICK':
@@ -98,3 +97,30 @@ class Logger():
         if len(name) > 12:
             name = name[:12]
         return space + name
+
+####log clearer###
+def clear_log():
+    f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle', 'rb')
+    data = pickle.load(f)
+    f.close()
+    print(len(data['#nanodesu']))
+    a = ''
+    while a != 'd':
+        a = input('write a number, press \'d\' when done.')
+        try:
+            a = int(a)
+            print(data['#nanodesu'][a])
+        except:
+            pass
+    start = input('select starting index')
+    end = input('select ending index')
+    del data['#nanodesu'][int(start):int(end)]
+    print('Length of log is %d' %(len(data['#nanodesu'])))
+    a = input('Are you sure?')
+    f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle', 'wb')
+    pickle.dump(data,f)
+    f.close()
+    print('done')
+
+if __name__ == '__main__':
+    clear_log()

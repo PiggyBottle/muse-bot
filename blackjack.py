@@ -88,6 +88,18 @@ class Game():
             self.players[name] = Player(name, amount)
             self.turnorder.append(name)
             self.endgame_processing_order.append(name)
+    def remove_player(self, dict):
+        del self.players[dict['name']]
+        while dict['name'] in self.turnorder:   #to account for splits
+            del self.turnorder[self.turnorder.index(dict['name'])]
+        del self.endgame_processing_order[self.endgame_processing_order.index(dict['name'])]
+        dict['type'] = 'PRIVMSG'
+        dict['channel'] = self.channel
+        dict['message'] = 'A player left the channel and was removed from the game.'
+        if len(self.turnorder) == 0 and len(self.endgame_processing_order) != 0:
+            dict['message'] += '\r\n'
+            return self.end_game(dict)
+        return dict
     def dealer_draw(self):
         while self.dealer.active_hand_value() < 17:
             self.dealer.hand[0].append(self.deck.pop())
@@ -265,6 +277,8 @@ class Game():
             elif len(list) > 1 and player.active_hand_number == 2:
                 player.active_hand_number = 1
     def execute(self, dict):
+        if (dict['type'] == 'QUIT' or (dict['type'] == 'PART' and dict['channel'] == self.channel)) and dict['name'].lower() in self.lower_keys():
+            return self.remove_player(dict)
         #Making sure only messages sent from the initiating channel are registered
         if not dict['channel'] == self.channel:
             return
