@@ -11,7 +11,7 @@ class SpamGuard():
         self.commandlist = '$money $time $anime $blackjack $log .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050'.split()
 
     def check(self, dict, state):
-        if dict['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Starting round')) or dict['message'].startswith('.trivia')):
+        if dict['type'] == 'PRIVMSG' and dict['name'] == 'Trivia' and dict['message'].startswith('Starting round'):
             self.blocking = True
             dict['message'] = 'SpamGuard: Trivia detected. All commands and logging are now blocked.'
             return dict, 'block'
@@ -19,10 +19,15 @@ class SpamGuard():
             dict['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
             self.blocking = False
             return dict, 'block'
-        #elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('!hangman'):
-            #dict['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
-            #self.blocking = True
-            #return dict, 'block'
+        elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('!hangman'):
+            dict['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
+            self.blocking = True
+            return dict, 'block'
+        elif self.blocking == True and dict['type'] == 'PRIVMSG' and (dict['message'].startswith('FAILURE! ') or dict['message'].startswith('Correct! ')):
+            self.blocking = False
+            dict['message'] = 'SpamGuard: Hangman has ended. Commands and logging are now enabled'
+            return dict, 'block'
+
         elif self.blocking == False and dict['name'] in self.restricted:
             return dict, 'log'
         elif self.blocking == False and dict['message'].startswith('$log'):
@@ -32,8 +37,6 @@ class SpamGuard():
             else:
                 self.readlog_time = time.time()
                 return dict, 'do not log'
-        elif self.blocking == False and dict['message'] in self.commandlist:
-            return dict, 'do not log'
         elif self.blocking == True or dict['name'] in self.blocklist:
             return dict, 'block'
         elif self.blocking == False:
@@ -42,11 +45,10 @@ class SpamGuard():
                 if a in dict['message']:
                     found = True
                     break
-                if found == True:
-                    return dict, 'do not log'
-                elif state == 'blackjack':
-                    return dict, 'do not log'
-                else:
-                    return dict, 'open'
-            return dict, 'open'
+            if found == True:
+                return dict, 'do not log'
+            elif state == 'blackjack':
+                return dict, 'do not log'
+            else:
+                return dict, 'open'
         
