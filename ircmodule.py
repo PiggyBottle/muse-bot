@@ -29,7 +29,7 @@ class IRC(threading.Thread):
                 text=self.irc.recv(2040).decode()  #receive the text
             except:
                 pass
-            #print(text)
+            print(text)
             #using a list because sometimes multiple messages are received at a time when there's a lag
             list = text.split('\r\n')
             for text in list:

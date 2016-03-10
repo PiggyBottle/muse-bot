@@ -15,9 +15,16 @@ class Logger():
         self.lpl = lpl
     def log(self, dict):
         dict['time'] = datetime.datetime.utcnow()
-        f = open(self.lpl, 'rb')
-        data = pickle.load(f)
-        f.close()
+        #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
+        loaded = False
+        while loaded == False:
+            try:
+                f = open(self.lpl, 'rb')
+                data = pickle.load(f)
+                f.close()
+                loaded = True
+            except:
+                pass
         if not dict['channel'] == None and not dict['private_messaged'] == True:
             data[dict['channel']].append(dict)
             f = open(self.lpl, 'wb')
@@ -52,6 +59,8 @@ class Logger():
                     break
             elif a['type'] == 'NICK':
                 buffer += '%s%s has changed his nick to %s.\r\n' %(self.display_name(None), a['name'],a['message'])
+            elif a['type'] == 'KICK':
+                buffer += '%s%s %s.\r\n' %(self.display_name(None), a['name'], a['message'] )
             log = buffer + log
         a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':log}
         json.dumps(a)

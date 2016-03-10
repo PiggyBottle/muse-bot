@@ -21,7 +21,7 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
     def main(self, dict):
         dict, permissions = self.spamguard.check(dict,self.state)
-        if dict['message'].startswith('SpamGuard'):
+        if 'SpamGuard: ' in dict['message']:
             return dict
         if not permissions == 'block' and not permissions == 'do not log':
             self.logger.log(dict)
