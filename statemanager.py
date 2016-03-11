@@ -13,7 +13,7 @@ class StateManager():
     def __init__(self, irc, dpl, lpl):
         self.irc = irc
         self.state = 'main'
-        self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True}
+        self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True, 'loan':True}
         #remember to add self.dpl into functions that need pickle!
         self.dpl = dpl
         self.lpl = lpl
@@ -56,18 +56,18 @@ class StateManager():
                 dict['message'] = 'Error, player has no money!'
                 return dict
             self.state = 'blackjack'
-            self.commands['poll'] = False
+            self.commands['poll'],self.commands['loan'] = False,False
             self.function = blackjack.Game(dict, self.dpl)
             return self.function.execute(dict)
         elif self.state == 'blackjack':
             if (message.startswith('$quit') and dict['name'].lower() in self.function.lower_keys()) or len(self.function.lower_keys()) < 1:
                 self.function = None
-                self.commands['poll'] = True
+                self.commands['poll'],self.commands['loan'] = True,True
                 self.state = 'main'
                 dict['message'] = 'Game closed.'
                 return dict
             elif dict['type'] == 'NICK' and dict['name'].lower() in self.function.lower_keys():
-                self.commands['poll'] = True
+                self.commands['poll'],self.commands['loan'] = True,True
                 self.state = 'main'
                 dict['message'] = 'A nick change has been detected. Game closing.'
                 dict['type'] = 'PRIVMSG'
@@ -75,6 +75,34 @@ class StateManager():
                 self.function = None
                 return dict
             return self.function.execute(dict)
+        elif self.commands['loan'] == True and not self.state == 'loan' and message.startswith('$loan'):
+            self.function = money.Money(self.dpl)
+            dict,move_on = self.function.loan(dict)
+            if move_on == False:
+                self.function = None
+            elif move_on == True:
+                self.state = 'loan'
+                self.commands['blackjack'],self.commands['loan'] = False,False
+            return dict
+        elif self.state == 'loan':
+            dict,finish = self.function.loan(dict)
+            if finish:
+                self.function = None
+                self.commands['blackjack'],self.commands['loan'] = True,True
+                self.state = 'main'
+            return dict
+        elif message.startswith('$debt'):
+            a = money.Money(self.dpl)
+            debt = a.check_debt(dict['name'])
+            if debt == 0:
+                dict['message'] = 'You have no $debt!'
+            else:
+                dict['message'] = 'You have %d NanoDollars of debt.' %(debt)
+            return dict
+        elif message.startswith('$pay') and self.state == 'main':
+            a = money.Money(self.dpl)
+            return a.pay_debt(dict)
+            
         elif message.startswith('$log'):
             dict = self.logger.read(dict)
             return dict

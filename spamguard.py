@@ -8,7 +8,7 @@ class SpamGuard():
         self.restricted = ['jonathanasdf','jsdf','dmitri']
         self.blocklist = ['Trivia', 'Internets','Icara','Tokino', 'Quotes']
         self.readlog_time = 0
-        self.commandlist = '$money $time $anime $blackjack $log .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()
+        self.commandlist = '$money $time $anime $blackjack $loan $pay $debt $log .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()
         self.states = {}    #using a dict to make it easier to delete keys
 
     def manage_states(self, state):
