@@ -6,6 +6,7 @@ import money
 import blackjack
 import logger
 import spamguard
+import helper
 
 
 
@@ -100,9 +101,13 @@ class StateManager():
                 dict['message'] = 'You have %d NanoDollars of debt.' %(debt)
             return dict
         elif message.startswith('$pay') and self.state == 'main':
+            #forcing state to be 'main' to prevent people from paying money in the middle of a blackjack game
             a = money.Money(self.dpl)
             return a.pay_debt(dict)
-            
+        elif message.startswith('$help') and self.state == 'main':
+            a = helper.Helper()
+            dict = a.execute(dict)
+            return dict
         elif message.startswith('$log'):
             dict = self.logger.read(dict)
             return dict

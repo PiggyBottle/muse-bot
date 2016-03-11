@@ -8,14 +8,18 @@ class SpamGuard():
         self.restricted = ['jonathanasdf','jsdf','dmitri']
         self.blocklist = ['Trivia', 'Internets','Icara','Tokino', 'Quotes']
         self.readlog_time = 0
-        self.commandlist = '$money $time $anime $blackjack $loan $pay $debt $log .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()
+        self.commandlist = '$money $time $anime $blackjack $loan $pay $debt $log $help .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()
         self.states = {}    #using a dict to make it easier to delete keys
 
     def manage_states(self, state):
         if state == 'blackjack' and not state in self.states.keys():
             self.states['blackjack'] = True
+        elif state == 'loan' and not state in self.states.keys():
+            self.states['loan'] = True
         elif state != 'blackjack' and 'blackjack' in self.states.keys():
             del self.states['blackjack']
+        elif state != 'loan' and 'loan' in self.states.keys():
+            del self.states['loan']
         if len(self.states.keys()) == 0 or (len(self.states.keys()) == 1 and 'blackjack' in self.states.keys()):
             self.blocking = False
         else:
@@ -35,6 +39,9 @@ class SpamGuard():
         ###interrupt blackjack###
         elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('$blackjack') and not 'blackjack' in self.states.keys() and len(self.states.keys()) > 0:
             dict['message'] = 'SpamGuard: Terminate all other functions before starting $blackjack.'
+            return dict, 'block'
+        elif dict['message'] == 'PRIVMSG' and dict['message'].startswith('$loan') and not 'loan' in self.states.keys() and len(self.states.keys()) > 0:
+            dict['message'] = 'SpamGuard: Terminate all other functions before requesting a $loan.'
             return dict, 'block'
         ###interrupt hangman###
         elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('!hangman') and len(self.states.keys()) > 0 and not 'hangman' in self.states.keys():
