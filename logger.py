@@ -13,6 +13,7 @@ class Logger():
         self.logstxt = 'D:\Documents\muse-bot\logs.txt'
         self.dpl = dpl
         self.lpl = lpl
+        self.empty_time_box = '[' + (' ' * 18) + '|\r\n'
     def log(self, dict):
         dict['time'] = datetime.datetime.utcnow()
         #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
@@ -40,9 +41,13 @@ class Logger():
         data = pickle.load(f)
         f.close()
         log = ''
+        log_date = None
+        log_month = None
+        log_year = None
         for a in reversed(data['#nanodesu']):
             buffer = ''
-            buffer += self.display_time(a['time'],tz)
+            time_string,time_date,time_month,time_year = self.display_time(a['time'],tz)
+            buffer += time_string
             if a['type'] == 'PRIVMSG':
                 buffer += '%s|%s\r\n' %(self.display_name(a['name']), a['message'])
             elif a['type'] == 'JOIN':
@@ -61,7 +66,17 @@ class Logger():
                 buffer += '%s%s has changed his nick to %s.\r\n' %(self.display_name(None), a['name'],a['message'])
             elif a['type'] == 'KICK':
                 buffer += '%s%s %s.\r\n' %(self.display_name(None), a['name'], a['message'] )
+            if log_date == None:
+                log_date = time_date
+                log_month = time_month
+                log_year = time_year
+            elif log_date != None and log_date != time_date:
+                buffer += self.empty_time_box + '[----%s.%s.%d----|\r\n' %(log_date,log_month,log_year) + self.empty_time_box
+                log_date = time_date
+                log_month = time_month
+                log_year = time_year
             log = buffer + log
+        log = '[----%s.%s.%d----|\r\n' %(log_date,log_month,log_year) + log
         a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':log}
         json.dumps(a)
         url = 'https://paste.ee/api'
@@ -72,7 +87,7 @@ class Logger():
         except http.client.HTTPException as e:
             print(e)
         response = request.read().decode()
-        dict['message'] = json.loads(response)['paste']['link']
+        dict['message'] = json.loads(response)['paste']['raw']
         return dict
         '''
         f = open(self.logstxt, 'r')
@@ -96,7 +111,13 @@ class Logger():
             minute_zero = str(0)
         else:
             minute_zero = ''
-        return '[%s%d:%s%d]' %(hour_zero, time.hour, minute_zero, time.minute)
+        day_zero = str(time.day)
+        if len(day_zero) < 2:
+            day_zero = '0' + day_zero
+        month_zero = str(time.month)
+        if len(month_zero) < 2:
+            month_zero = '0' + month_zero
+        return '[%s%d:%s%d]' %(hour_zero, time.hour, minute_zero, time.minute), day_zero, month_zero, time.year
     def display_name(self, name):
         if name == None:    #for channel parts, quits, joins, etc
             return (' ' * 12)+'|'
