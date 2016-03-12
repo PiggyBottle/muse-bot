@@ -20,7 +20,7 @@ class SpamGuard():
             del self.states['blackjack']
         elif state != 'loan' and 'loan' in self.states.keys():
             del self.states['loan']
-        if len(self.states.keys()) == 0 or (len(self.states.keys()) == 1 and 'blackjack' in self.states.keys()):
+        if len(self.states.keys()) == 0 or (len(self.states.keys()) == 1 and ('blackjack' in self.states.keys() or 'loan' in self.states.keys())):
             self.blocking = False
         else:
             self.blocking = True
