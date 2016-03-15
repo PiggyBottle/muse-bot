@@ -2,46 +2,65 @@ import threading
 import socket
 import sys
 import queue
+import time
 
 class IRC(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.server = "irc.rizon.net"       #settings
         self.channel = "#nanodesu"
-        self.botnick = "Muse-chan-mobile"
+        self.botnick = "Muse-chan"
         self.inputs = queue.Queue()
-        self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.irc.connect((self.server, 6667))
-        self.connect()
+        self.disconnected = False
+        self.dc_dict = {'type':'PRIVMSG','channel':self.channel,'message':'@SoraSky Emergency connection re-established.','private_messaged':False}
     def connect(self):
         a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :Muse-chan\n"
-        b = "NICK "+ self.botnick +"\n"
+        b = "NICK "+ 'sorasky' +"\n"
         c = "PRIVMSG nickserv :lalala\r\n"
         d = "JOIN "+ self.channel +"\n"
-        
+        e = "NICK "+ self.botnick +"\n"
+
         self.irc.send(a.encode())   #user authentication
-        self.irc.send(b.encode())   #sets nick
-        self.irc.send(c.encode())    #auth
-        self.irc.send(d.encode())   #join the chan
+        if self.disconnected == True:
+            b = "NICK "+ "Muse-chan-safemode" +"\n"
+            self.irc.send(b.encode())   #sets nick
+            self.irc.send(d.encode())   #join the chan
+            time.sleep(5)
+            self.send(self.dc_dict)
+        else:
+            self.irc.send(b.encode())   #sets nick
+            self.irc.send(c.encode())    #auth
+            self.irc.send(d.encode())   #join the chan
+            self.irc.send(e.encode())
+        
     def run(self):
-        while 1:    #puts it in a loop
-            try:
-                text=self.irc.recv(2040).decode()  #receive the text
-            except:
-                pass
-            print(text)
-            #using a list because sometimes multiple messages are received at a time when there's a lag
-            list = text.split('\r\n')
-            for text in list:
-                if not ':' in text:
+        while True:
+            self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.irc.connect((self.server, 6667))
+            self.connect()
+            while True:
+                try:
+                    text=self.irc.recv(2040).decode()  #receive the text
+                except:
                     pass
-                elif text.find('PING :') != -1:
-                    pong = 'PONG ' + text.split()[1] + '\r\n'
-                    self.irc.send(pong.encode())    #returns 'PONG' back to the server (prevents pinging out!)
+                if text:
+                    print(text)
                 else:
-                    formatted_text = self.formatter(text)
-                    if not formatted_text['type'] == None:
-                        self.inputs.put(formatted_text)
+                    self.disconnected = True
+                    time.sleep(15)
+                    break
+                #using a list because sometimes multiple messages are received at a time when there's a lag
+                list = text.split('\r\n')
+                for text in list:
+                    if not ':' in text:
+                        pass
+                    elif text.find('PING :') != -1:
+                        pong = 'PONG ' + text.split()[1] + '\r\n'
+                        self.irc.send(pong.encode())    #returns 'PONG' back to the server (prevents pinging out!)
+                    else:
+                        formatted_text = self.formatter(text)
+                        if not formatted_text['type'] == None:
+                            self.inputs.put(formatted_text)
     def send(self, dict):
         if dict is None:
             return
