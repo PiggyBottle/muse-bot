@@ -5,7 +5,7 @@ import time
 class SpamGuard():
     def __init__(self):
         self.blocking = False
-        self.restricted = ['jonathanasdf','jsdf','dmitri']
+        self.restricted = ['jsdf','dmitri']#'jonathanasdf'
         self.blocklist = ['Trivia', 'Internets','Icara','Tokino', 'Quotes']
         self.readlog_time = 0
         self.commandlist = '$money $time $anime $blackjack $loan $pay $debt $log $help .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()

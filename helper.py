@@ -28,5 +28,5 @@ class Helper():
             elif option.startswith('log'):
                 dict['message'] = '$log generates a log of messages you\'ve missed since you last left the channel. Requires a time zone to be set.'
             else:
-                dict['message'] = 'Type $help <command> for details.\r\n%s %s:' %(dict['type'],dict['channel']) + self.list
+                dict['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['channel'],self.list)
             return dict

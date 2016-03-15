@@ -8,6 +8,7 @@ import logger
 import spamguard
 import helper
 import twitter
+import tell
 
 
 
@@ -24,6 +25,7 @@ class StateManager():
         self.twitter.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
+        self.tell = tell.Tell()
     def main(self, dict):
         dict, permissions = self.spamguard.check(dict,self.state)
         if 'SpamGuard: ' in dict['message']:
@@ -33,6 +35,12 @@ class StateManager():
         if not (permissions == 'open' or permissions == 'do not log'):
             return
         message = dict['message']
+        if message.startswith('!tell ') and len(message) > 6:
+            return self.tell.write(dict)
+        if dict['type'] == 'PRIVMSG':
+            tells, buffer = self.tell.check(dict)
+            if tells:
+                return buffer
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming()
             dict['message'] = a.execute(message[7:],self.dpl)

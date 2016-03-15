@@ -16,7 +16,7 @@ class IRC(threading.Thread):
     def connect(self):
         a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :Muse-chan\n"
         b = "NICK "+ 'sorasky' +"\n"
-        c = "PRIVMSG nickserv :lalala\r\n"
+        c = "PRIVMSG nickserv :identify lalala\r\n"
         d = "JOIN "+ self.channel +"\n"
         e = "NICK "+ self.botnick +"\n"
 
@@ -81,7 +81,7 @@ class IRC(threading.Thread):
         if 'PRIVMSG' in text[1]:
             dict['type'] = 'PRIVMSG'
             dict['channel'] = text[1].split('PRIVMSG ',1)[1].split(' ',1)[0]
-            if dict['channel'] == self.botnick:
+            if not dict['channel'].startswith('#'):
                 dict['private_messaged'] = True
         elif 'JOIN' in text[1]:
             dict['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
