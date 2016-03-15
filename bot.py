@@ -4,11 +4,12 @@ import statemanager
 ###file paths###
 dpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/data.pickle'
 lpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle'
+tpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/twitter.pickle'
 
 
 irc = ircmodule.IRC()
 irc.start()
-sm = statemanager.StateManager(irc,dpl,lpl)    #putting irc object in to support the use of the irc.send() function in threads
+sm = statemanager.StateManager(irc,dpl,lpl,tpl)    #putting irc object in to support the use of the irc.send() function in threads
 while True:
     dict = irc.inputs.get()
     irc.send(sm.main(dict))

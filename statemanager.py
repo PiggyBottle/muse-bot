@@ -7,17 +7,21 @@ import blackjack
 import logger
 import spamguard
 import helper
+import twitter
 
 
 
 class StateManager():
-    def __init__(self, irc, dpl, lpl):
+    def __init__(self, irc, dpl, lpl, tpl):
         self.irc = irc
         self.state = 'main'
         self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True, 'loan':True}
         #remember to add self.dpl into functions that need pickle!
         self.dpl = dpl
         self.lpl = lpl
+        self.tpl = tpl
+        self.twitter = twitter.Twitter(irc, tpl)
+        self.twitter.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
     def main(self, dict):
