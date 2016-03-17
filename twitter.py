@@ -28,7 +28,7 @@ class Twitter(threading.Thread):
         f.close()
 
         
-        self.dict_template = {'type':'PRIVMSG','channel':irc.channel,'message':'','private_messaged':False}
+        self.dict_template = {'type':'PRIVMSG','channel':'SoraSky','message':'','private_messaged':False}
         self.new_line_template = '\r\n%s %s :' %(self.dict_template['type'],self.dict_template['channel'])
 
     def run(self):

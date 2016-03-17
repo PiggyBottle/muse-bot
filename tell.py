@@ -3,7 +3,7 @@ import pickle
 
 class Tell():
     def __init__(self):
-        f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/tell.pickle', 'rb')
+        f = open('tell.pickle', 'rb')
         self.data = pickle.load(f)
         f.close()
     def write(self, dict):
@@ -18,7 +18,7 @@ class Tell():
         if name not in self.data.keys():
             self.data[name.lower()] = []
         self.data[name.lower()].append(tell)
-        f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/tell.pickle', 'wb')
+        f = open('tell.pickle', 'wb')
         pickle.dump(self.data,f)
         f.close()
         dict['message'] = 'Message registered.'
@@ -39,6 +39,9 @@ class Tell():
             del self.data[a]
         if unread_messages > 0:
             dict['message'] = buffer
+            f = open('tell.pickle','wb')
+            pickle.dump(self.data,f)
+            f.close()
             return True,dict
         else:
             return False,dict
