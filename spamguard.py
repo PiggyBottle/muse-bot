@@ -53,7 +53,7 @@ class SpamGuard():
             self.states['hangman'] = True
             return dict, 'block'
         ###end trivia###
-        elif 'trivia' in self.states.keys() and dict['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped')) or dict['message'].startswith('.strivia')):
+        elif 'trivia' in self.states.keys() and dict['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped'))):
             if len(self.states.keys()) == 1:
                 dict['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
             del self.states['trivia']
