@@ -12,26 +12,27 @@ class IRC(threading.Thread):
         self.botnick = "Muse-chan"
         self.inputs = queue.Queue()
         self.disconnected = False
-        self.dc_dict = {'type':'PRIVMSG','channel':self.channel,'message':'@SoraSky Emergency connection re-established.','private_messaged':False}
     def connect(self):
         a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :Muse-chan\n"
-        b = "NICK "+ 'sorasky' +"\n"
+        b = "NICK "+ self.botnick  +"\n"
         c = "PRIVMSG nickserv :identify lalala\r\n"
         d = "JOIN "+ self.channel +"\n"
         e = "NICK "+ self.botnick +"\n"
 
         self.irc.send(a.encode())   #user authentication
         if self.disconnected == True:
-            b = "NICK "+ "Muse-chan-safemode" +"\n"
-            self.irc.send(b.encode())   #sets nick
-            self.irc.send(d.encode())   #join the chan
-            time.sleep(5)
-            self.send(self.dc_dict)
+            for a in range(5):
+                self.irc.send('PRIVMSG nickserv:ghost Muse-chan lalala\r\n'.encode())
+                self.irc.send(b.encode())   #sets nick
+            for a in range(3):
+                self.irc.send(c.encode())
+            for a in range(2):
+                self.irc.send(d.encode())   #join the chan
+                self.disconnected = False
         else:
             self.irc.send(b.encode())   #sets nick
             self.irc.send(c.encode())    #auth
             self.irc.send(d.encode())   #join the chan
-            self.irc.send(e.encode())
         
     def run(self):
         while True:

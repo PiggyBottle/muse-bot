@@ -8,12 +8,13 @@ import logger
 import spamguard
 import helper
 import twitter
+import ann
 import tell
 
 
 
 class StateManager():
-    def __init__(self, irc, dpl, lpl, tpl):
+    def __init__(self, irc, dpl, lpl, tpl, annpl):
         self.irc = irc
         self.state = 'main'
         self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True, 'loan':True}
@@ -23,6 +24,8 @@ class StateManager():
         self.tpl = tpl
         self.twitter = twitter.Twitter(irc, tpl)
         self.twitter.start()
+        self.ann = ann.ANN(irc,annpl)
+        self.ann.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
@@ -35,12 +38,14 @@ class StateManager():
         if not (permissions == 'open' or permissions == 'do not log'):
             return
         message = dict['message']
-        if message.startswith('!tell ') and len(message) > 6:
+        '''
+        if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
             return self.tell.write(dict)
         if dict['type'] == 'PRIVMSG':
             tells, buffer = self.tell.check(dict)
             if tells:
                 return buffer
+        '''
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming()
             dict['message'] = a.execute(message[7:],self.dpl)
