@@ -38,7 +38,7 @@ class IRC(threading.Thread):
             for a in range(5):
                 self.irc.send(c.encode())    #auth
                 self.irc.send(d.encode())   #join the chan
-                self.irc.send('JOIN #ndacademy benkyou\r\n'.encode())
+                self.irc.send('JOIN #ndacademy lalala\r\n'.encode())
 
     def run(self):
         while True:
