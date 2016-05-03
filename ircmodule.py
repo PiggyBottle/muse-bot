@@ -22,18 +22,24 @@ class IRC(threading.Thread):
         self.irc.send(a.encode())   #user authentication
         if self.disconnected == True:
             for a in range(5):
+                self.irc.send("NICK dfdfdf\n".encode())
+            for a in range(5):
                 self.irc.send('PRIVMSG nickserv:ghost Muse-chan lalala\r\n'.encode())
+            for a in range(5):
                 self.irc.send(b.encode())   #sets nick
-            for a in range(3):
+            for a in range(5):
                 self.irc.send(c.encode())
-            for a in range(2):
+            for a in range(5):
                 self.irc.send(d.encode())   #join the chan
+                self.irc.send('JOIN #ndacademy lalala'.encode())
                 self.disconnected = False
         else:
             self.irc.send(b.encode())   #sets nick
-            self.irc.send(c.encode())    #auth
-            self.irc.send(d.encode())   #join the chan
-        
+            for a in range(5):
+                self.irc.send(c.encode())    #auth
+                self.irc.send(d.encode())   #join the chan
+                self.irc.send('JOIN #ndacademy benkyou\r\n'.encode())
+
     def run(self):
         while True:
             self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,12 +49,16 @@ class IRC(threading.Thread):
                 try:
                     text=self.irc.recv(2040).decode()  #receive the text
                 except:
-                    pass
+                    self.disconnected = True
+                    break
                 if text:
-                    print(text)
+                    try:
+                        print(text)
+                    except:
+                        pass
                 else:
                     self.disconnected = True
-                    time.sleep(15)
+                    #time.sleep(15)
                     break
                 #using a list because sometimes multiple messages are received at a time when there's a lag
                 list = text.split('\r\n')
@@ -73,7 +83,7 @@ class IRC(threading.Thread):
     def formatter(self,rawtext):
         text = rawtext.split(':', 2)
         dict = {}
-        try:    #to circumvent the problem of system messages that do not have enough ':'s 
+        try:    #to circumvent the problem of system messages that do not have enough ':'s
             dict['name'] = text[1].split('!')[0]
             dict['message'] = text[2]
         except:
