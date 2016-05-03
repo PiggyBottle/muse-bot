@@ -26,7 +26,16 @@ class Logger():
                 loaded = True
             except:
                 pass
+        if dict['type'] == 'QUIT':
+            #because the 'QUIT' action applies to all channels.
+            for a in data.keys():
+                data[a].append(dict)
+                f = open(self.lpl, 'wb')
+                pickle.dump(data, f)
+                f.close()
         if not dict['channel'] == None and not dict['private_messaged'] == True:
+            if not dict['channel'] in data.keys():
+                data[dict['channel']] = []
             data[dict['channel']].append(dict)
             f = open(self.lpl, 'wb')
             pickle.dump(data, f)
@@ -44,7 +53,12 @@ class Logger():
         log_date = None
         log_month = None
         log_year = None
-        for a in reversed(data['#nanodesu']):
+        channel_to_search = ''
+        if not dict['channel'] in data.keys():
+            channel_to_search = '#nanodesu'
+        else:
+            channel_to_search = dict['channel']
+        for a in reversed(data[channel_to_search]):
             buffer = ''
             time_string,time_date,time_month,time_year = self.display_time(a['time'],tz)
             buffer += time_string
@@ -130,7 +144,7 @@ class Logger():
 
 ####log clearer###
 def clear_log():
-    f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle', 'rb')
+    f = open('logs.pickle', 'rb')
     data = pickle.load(f)
     f.close()
     print(len(data['#nanodesu']))
@@ -147,7 +161,7 @@ def clear_log():
     del data['#nanodesu'][int(start):int(end)]
     print('Length of log is %d' %(len(data['#nanodesu'])))
     a = input('Are you sure?')
-    f = open('/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle', 'wb')
+    f = open('logs.pickle', 'wb')
     pickle.dump(data,f)
     f.close()
     print('done')
