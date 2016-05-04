@@ -15,6 +15,9 @@ def config():
     config = {}
     name = input('What do you want the bot\'s name to be?\n')
     password = input('What is its nickserv password?\n')
+    master = input('What is the nick of the bot\'s master? (Your personal nick)\n')
+    email_address = input('What is the email address that the bot will use? (Blank if none)\n')
+    email_password = input('What is the password for the email address? (Blank if none\n')
     no_of_channels = int(input('How many channels will the bot join?\n'))
     config['channels'] = []
     for a in range(no_of_channels):
@@ -30,12 +33,19 @@ def config():
     print('Please confirm the following details:')
     print('Name: %s' %(name))
     print('Password: %s' %(password))
+    print('Master : %s' %(master))
+    print('Email address: %s' %(email_address))
+    print('Email password: %s' %(email_password))
     for a in config['channels']:
         print('Channel name: %s, Password: %s' %(a['name'], a['password']))
     confirmation = input('Is that all? Type \'n\' to restart.\n')
     if not confirmation == 'n':
         config['name'] = name
         config['password'] = password
+        config['master'] = master
+        config['email'] = {}
+        config['email']['address'] = email_address
+        config['email']['password'] = email_password
         f = open('config.pickle', 'wb')
         pickle.dump(config,f)
         f.close()
