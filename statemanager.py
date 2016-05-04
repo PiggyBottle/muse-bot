@@ -128,7 +128,7 @@ class StateManager():
         elif message.startswith('$log'):
             dict = self.logger.read(dict)
             return dict
-        elif message.startswith('\x01ACTION looks at %s' %(irc.botnick)):
+        elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
             dict['message'] = '\x01ACTION looks at %s' %(dict['name'])
             return dict
 

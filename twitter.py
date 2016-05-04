@@ -27,8 +27,8 @@ class Twitter(threading.Thread):
         self.data = pickle.load(f)
         f.close()
 
-        
-        self.dict_template = {'type':'PRIVMSG','channel':'SoraSky','message':'','private_messaged':False}
+
+        self.dict_template = {'type':'PRIVMSG','channel': self.irc.master,'message':'','private_messaged':False}
         self.new_line_template = '\r\n%s %s :' %(self.dict_template['type'],self.dict_template['channel'])
 
     def run(self):
@@ -36,7 +36,7 @@ class Twitter(threading.Thread):
             time.sleep(30)
             print('checking twitter...')
             try:
-                buffer = 'SoraSky, you have unread tweets:'
+                buffer = '%s, you have unread tweets:' %(self.irc.master)
                 new_tweets = 0
                 for user in self.data.keys():
                     req = oauth.Request.from_consumer_and_token(self.oauth_consumer,

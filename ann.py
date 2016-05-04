@@ -13,14 +13,14 @@ class ANN(threading.Thread):
         self.irc = irc
         self.annpl = annpl
         self.url = "http://www.animenewsnetwork.com/all/rss.xml"
-        self.dict_template = {'type':'PRIVMSG','channel':'SoraSky','message':'','private_messaged':False}
+        self.dict_template = {'type':'PRIVMSG','channel': self.irc.master,'message':'','private_messaged':False}
         self.new_line_template = '\r\n%s %s :' %(self.dict_template['type'],self.dict_template['channel'])
 
         f = open(self.annpl, 'rb')
         self.data = pickle.load(f)
         f.close()
     def loop(self, tree):
-        buffer = 'SoraSky, you have new ANN posts:'
+        buffer = '%s, you have new ANN posts:' %(self.irc.master)
         new_posts = 0
         feed_number = 1
         for a in tree:

@@ -15,13 +15,13 @@ class IRC(threading.Thread):
         #This is the default channel that the formatter function uses for 'QUIT'
         self.channel = self.config['channels'][0]['name']
         self.botnick = self.config['name']
+        self.master = self.config['master']
         self.inputs = queue.Queue()
         self.disconnected = False
     def connect(self):
         a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :" + self.botnick + "\n"
         b = "NICK "+ self.botnick  +"\n"
         c = "PRIVMSG nickserv :identify %s\r\n" %(self.config['password'])
-        e = "NICK "+ self.botnick +"\n"
 
         self.irc.send(a.encode()) #user authentication
         if self.disconnected == True:
