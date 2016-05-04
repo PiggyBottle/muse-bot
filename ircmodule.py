@@ -3,42 +3,55 @@ import socket
 import sys
 import queue
 import time
+import pickle
 
 class IRC(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.server = "irc.rizon.net"       #settings
-        self.channel = "#nanodesu"
-        self.botnick = "Muse-chan"
+        f = open('config.pickle', 'rb')
+        self.config = pickle.load(f)
+        f.close()
+        #This is the default channel that the formatter function uses for 'QUIT'
+        self.channel = self.config['channels'][0]['name']
+        self.botnick = self.config['name']
         self.inputs = queue.Queue()
         self.disconnected = False
     def connect(self):
-        a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :Muse-chan\n"
+        a = "USER "+ self.botnick +" "+ self.botnick +" "+ self.botnick +" :" + self.botnick + "\n"
         b = "NICK "+ self.botnick  +"\n"
-        c = "PRIVMSG nickserv :identify lalala\r\n"
-        d = "JOIN "+ self.channel +"\n"
+        c = "PRIVMSG nickserv :identify %s\r\n" %(self.config['password'])
         e = "NICK "+ self.botnick +"\n"
 
-        self.irc.send(a.encode())   #user authentication
+        self.irc.send(a.encode()) #user authentication
         if self.disconnected == True:
+            #Use fake nick first
             for a in range(5):
-                self.irc.send("NICK dfdfdf\n".encode())
+                self.irc.send('NICK dfdfdf\n'.encode())
+            #ghost the real nick
             for a in range(5):
-                self.irc.send('PRIVMSG nickserv:ghost Muse-chan lalala\r\n'.encode())
+                self.irc.send(('PRIVMSG nickserv:ghost %s %s\r\n' %(self.botnick,self.config['password'])).encode())
             for a in range(5):
-                self.irc.send(b.encode())   #sets nick
+                #Use real nick
+                self.irc.send(b.encode())
+                #Identify real nick
+                self.irc.send(c.encode())
+            for b in range(5):
+                #Join channels
+                for a in self.config['channels']:
+                    self.irc.send(('JOIN %s %s\n' %(a['name'], a['password'])).encode())
+            self.disconnected = False
+        elif self.disconnected != True:
+            #Use nick
+            for a in range(5):
+                self.irc.send(b.encode())
+            #Identify nickserv
             for a in range(5):
                 self.irc.send(c.encode())
-            for a in range(5):
-                self.irc.send(d.encode())   #join the chan
-                self.irc.send('JOIN #ndacademy lalala'.encode())
-                self.disconnected = False
-        else:
-            self.irc.send(b.encode())   #sets nick
-            for a in range(5):
-                self.irc.send(c.encode())    #auth
-                self.irc.send(d.encode())   #join the chan
-                self.irc.send('JOIN #ndacademy lalala\r\n'.encode())
+            for b in range(5):
+                #Join channels
+                for a in self.config['channels']:
+                    self.irc.send(('JOIN %s %s\n' %(a['name'], a['password'])).encode())
 
     def run(self):
         while True:
@@ -117,7 +130,8 @@ class IRC(threading.Thread):
             dict['channel'] = text[1].split('KICK ')[1].split(' ')[0]
             dict['name'] = text[1].split('KICK ')[1].split(' ')[1]
             if dict['name'] == self.botnick:
-                text = 'JOIN '+self.channel+'\n'
+                #:SoraSky!~sora@always.online-never.available KICK #nanodesu kick_me_pls :test
+                text = 'JOIN '+dict['channel']+'\n'
                 self.irc.send(text.encode())
         elif 'MODE' in text[1]:     #temporary placeholder
             dict['type'] = 'MODE'
