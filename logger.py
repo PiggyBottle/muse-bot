@@ -10,36 +10,35 @@ import usertimes
 
 class Logger():
     def __init__(self,dpl,lpl):
-        self.logstxt = 'D:\Documents\muse-bot\logs.txt'
         self.dpl = dpl
         self.lpl = lpl
         self.empty_time_box = '[' + (' ' * 18) + '|\r\n'
-    def log(self, dict, namelist):
-        dict['time'] = datetime.datetime.utcnow()
-        #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
         loaded = False
         while loaded == False:
             try:
                 f = open(self.lpl, 'rb')
-                data = pickle.load(f)
+                self.data = pickle.load(f)
                 f.close()
                 loaded = True
             except:
                 pass
+    def log(self, dict, namelist):
+        dict['time'] = datetime.datetime.utcnow()
+        #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
         if dict['type'] == 'QUIT':
             #because the 'QUIT' action applies to multiple channels.
             for a in namelist.keys():
                 if dict['name'] in namelist[a]:
-                    data[a].append(dict)
+                    self.data[a].append(dict)
             f = open(self.lpl, 'wb')
-            pickle.dump(data, f)
+            pickle.dump(self.data, f)
             f.close()
         elif not dict['channel'] == None and not dict['private_messaged'] == True:
-            if not dict['channel'] in data.keys():
-                data[dict['channel']] = []
-            data[dict['channel']].append(dict)
+            if not dict['channel'] in self.data.keys():
+                self.data[dict['channel']] = []
+            self.data[dict['channel']].append(dict)
             f = open(self.lpl, 'wb')
-            pickle.dump(data, f)
+            pickle.dump(self.data, f)
             f.close()
     def read(self, dict):
         a = usertimes.TimeZoneCheck()
@@ -110,12 +109,6 @@ class Logger():
         f.close()
         return a
         '''
-    def clear(self):
-        f = open(self.lpl, 'wb')
-        data = {'#nanodesu':[]}
-        pickle.dump(data,f)
-        f.close()
-
     def display_time(self,time,tz):
         time += datetime.timedelta(hours=tz)
         if time.hour < 10:
