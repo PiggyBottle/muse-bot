@@ -110,6 +110,7 @@ class IRC(threading.Thread):
             dict['channel'] = text[2]
             dict['message'] = ''
         elif 'QUIT' in text[1]:
+            #:SoraSky!~sora@always.online-never.available QUIT :Quit: leaving
             dict['type'] = 'QUIT'
             dict['message'] = ''
             dict['channel'] = self.channel

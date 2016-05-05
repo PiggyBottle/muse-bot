@@ -1,6 +1,6 @@
 import ircmodule
 import statemanager
-import pickle
+import setup
 
 
 '''
@@ -14,9 +14,8 @@ lpl = 'logs.pickle'
 tpl = 'twitter.pickle'
 annpl = 'ann.pickle'
 
-f = open('config.pickle','rb')
-config = pickle.load(f)
-f.close()
+config = setup.main()
+
 
 irc = ircmodule.IRC(config)
 irc.start()
