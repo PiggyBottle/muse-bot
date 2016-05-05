@@ -17,7 +17,7 @@ def config():
     password = input('What is its nickserv password?\n')
     master = input('What is the nick of the bot\'s master? (Your personal nick)\n')
     email_address = input('What is the email address that the bot will use? (Blank if none)\n')
-    email_password = input('What is the password for the email address? (Blank if none\n')
+    email_password = input('What is the password for the email address? (Blank if none)\n')
     no_of_channels = int(input('How many channels will the bot join?\n'))
     config['channels'] = []
     for a in range(no_of_channels):
