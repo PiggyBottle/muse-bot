@@ -27,6 +27,11 @@ def email(reader):
     emailpass = reader.get('email', 'password')
     return {email:emailpass}
 
+def master(reader):
+    # Read the nickname of the bot's master
+    master = reader.get('master', 'nick')
+    return master
+
 def main():
     # Create the config reading object
     reader = confp()
@@ -34,6 +39,7 @@ def main():
     chan = channels(reader)
     botserv = server(reader)
     emailinf = email(reader)
+    master = master(reader)
 
 if __name__ == '__main__':
     main()
