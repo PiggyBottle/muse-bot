@@ -2,6 +2,8 @@ import datetime
 import time
 import pickle
 
+days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
+
 class TimeZoneCheck():
     def __init__(self):
         pass
@@ -47,6 +49,7 @@ class TimeZoneCheck():
                 found = True
                 timezone = data['usertimezones'][a]
                 time = datetime.datetime.utcnow() + datetime.timedelta(hours=timezone)
+                weekday = days[time.weekday()]
                 if time.hour < 10:
                     hour_zero = str(0)
                 else:
@@ -59,9 +62,10 @@ class TimeZoneCheck():
                     a = str(a) + '\''
                 else:
                     a = str(a) + '\'s'
-                return 'It is currently '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+a+' time zone.'
+                return 'It is currently '+weekday+' '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+a+' time zone.'
         if found == False:
             return 'Either this person has not registered, or such person does not exist.'
+
     def get_raw_timezone(self,dpl,name):
         self.dpl = dpl
         f = open(self.dpl,'rb')
