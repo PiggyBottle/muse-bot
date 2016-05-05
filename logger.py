@@ -14,7 +14,7 @@ class Logger():
         self.dpl = dpl
         self.lpl = lpl
         self.empty_time_box = '[' + (' ' * 18) + '|\r\n'
-    def log(self, dict):
+    def log(self, dict, namelist):
         dict['time'] = datetime.datetime.utcnow()
         #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
         loaded = False
@@ -27,13 +27,14 @@ class Logger():
             except:
                 pass
         if dict['type'] == 'QUIT':
-            #because the 'QUIT' action applies to all channels.
-            for a in data.keys():
-                data[a].append(dict)
-                f = open(self.lpl, 'wb')
-                pickle.dump(data, f)
-                f.close()
-        if not dict['channel'] == None and not dict['private_messaged'] == True:
+            #because the 'QUIT' action applies to multiple channels.
+            for a in namelist.keys():
+                if dict['name'] in namelist[a]:
+                    data[a].append(dict)
+            f = open(self.lpl, 'wb')
+            pickle.dump(data, f)
+            f.close()
+        elif not dict['channel'] == None and not dict['private_messaged'] == True:
             if not dict['channel'] in data.keys():
                 data[dict['channel']] = []
             data[dict['channel']].append(dict)
@@ -147,20 +148,22 @@ def clear_log():
     f = open('logs.pickle', 'rb')
     data = pickle.load(f)
     f.close()
-    print(len(data['#nanodesu']))
-    a = ''
-    while a != 'd':
-        a = input('write a number, press \'d\' when done.')
-        try:
-            a = int(a)
-            print(data['#nanodesu'][a])
-        except:
-            pass
-    start = input('select starting index')
-    end = input('select ending index')
-    del data['#nanodesu'][int(start):int(end)]
-    print('Length of log is %d' %(len(data['#nanodesu'])))
-    a = input('Are you sure?')
+    for channel in data.keys():
+        print(str(channel))
+        print(len(data[channel]))
+        a = ''
+        while a != 'd':
+            a = input('write a number, press \'d\' when done.')
+            try:
+                a = int(a)
+                print(data[channel][a])
+            except:
+                pass
+        start = input('select starting index')
+        end = input('select ending index')
+        del data[channel][int(start):int(end)]
+        print('Length of log is %d' %(len(data[channel])))
+        a = input('Are you sure?')
     f = open('logs.pickle', 'wb')
     pickle.dump(data,f)
     f.close()

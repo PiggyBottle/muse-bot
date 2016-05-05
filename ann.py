@@ -59,4 +59,3 @@ class ANN(threading.Thread):
             except Exception as e:
                 print(e)
 
-

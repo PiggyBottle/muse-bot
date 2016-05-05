@@ -32,14 +32,46 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.emailer = emailer.Emailer(config)
+        self.namelist = {}
     def main(self, dict):
+        #Checking namelist, joins, parts, kicks, nick changes happen before logging, but the quit will happen after.
+        if dict['type'] == 'NAMELIST':
+            self.namelist[dict['channel']] = dict['message'].translate({ord('&'):'',ord('%'):'',ord('+'):'',ord('@'):''}).split()
+        elif dict['type'] == 'JOIN':
+            #sometimes, the JOIN message can come before the channel's userlist appears, so the bot will ignore it.
+            try:
+                self.namelist[dict['channel']].append(dict['name'])
+            except:
+                pass
+        elif dict['type'] == 'PART':
+            del self.namelist[dict['channel']][self.namelist[dict['channel']].index(dict['name'])]
+        elif dict['type'] == 'KICK':
+            del self.namelist[dict['channel']][self.namelist[dict['channel']].index(dict['name'])]
+        elif dict['type'] == 'NICK':
+            for a in self.namelist.keys():
+                if dict['name'] in self.namelist[a]:
+                    del self.namelist[a][self.namelist[a].index(dict['name'])]
+                    self.namelist[a].append(dict['message'])
+
+
+
+        #Checking Spamguard permissions
         dict, permissions = self.spamguard.check(dict,self.state)
         if 'SpamGuard: ' in dict['message']:
             return dict
         if not permissions == 'block' and not permissions == 'do not log':
-            self.logger.log(dict)
+            self.logger.log(dict,self.namelist)
         if not (permissions == 'open' or permissions == 'do not log'):
             return
+
+
+        #Letting bot delete QUITTED nick from namelist
+        if dict['type'] == 'QUIT':
+            for a in self.namelist.keys():
+                if dict['name'] in self.namelist[a]:
+                    del self.namelist[a][self.namelist[a].index(dict['name'])]
+
+
         message = dict['message']
         '''
         if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
@@ -136,7 +168,7 @@ class StateManager():
             return dict
         elif message.startswith ('$NDAemail '):
             #Emails sent represent NanoDesu Translations. Don't misuse this.
-            self.emailer.send([message.split()[1]],[],[],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
+            self.emailer.send([message.split()[1]],[],['viorama@gmail.com'],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
             dict['message'] = 'Email sent!'
             return dict
 

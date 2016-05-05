@@ -137,6 +137,18 @@ class IRC(threading.Thread):
             dict['message'] = ''
             dict['name'] = ''
             dict['channel'] = None
+        elif '353' in text[1]:
+            #There are cases where incomplete messages come in and break the bot, so forcing a try-except function
+            try:
+                if text[1].split()[1] == '353':
+                    dict['type'] = 'NAMELIST'
+                    dict['channel'] = text[1].split()[4]
+                    dict['message'] = text[2]
+                    dict['name'] = ''
+                    #private message was used to make sure it doesn't get logged
+                    dict['private_messaged'] = True
+            except:
+                pass
         else:
             dict['channel'], dict['type'] = (None,None)
         return dict
