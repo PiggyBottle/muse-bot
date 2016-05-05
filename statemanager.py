@@ -10,11 +10,13 @@ import helper
 import twitter
 import ann
 import tell
+import emailer
 
 
 
 class StateManager():
-    def __init__(self, irc, dpl, lpl, tpl, annpl):
+    def __init__(self, config, irc, dpl, lpl, tpl, annpl):
+        self.config = config
         self.irc = irc
         self.state = 'main'
         self.commands = {'time':True, 'money': True, 'poll':True, 'anime':True, 'blackjack':True, 'loan':True}
@@ -29,6 +31,7 @@ class StateManager():
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
+        self.emailer = emailer.Emailer(config)
     def main(self, dict):
         dict, permissions = self.spamguard.check(dict,self.state)
         if 'SpamGuard: ' in dict['message']:
@@ -130,5 +133,10 @@ class StateManager():
             return dict
         elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
             dict['message'] = '\x01ACTION looks at %s' %(dict['name'])
+            return dict
+        elif message.startswith ('$NDAemail '):
+            #Emails sent represent NanoDesu Translations. Don't misuse this.
+            self.emailer.send([message.split()[1]],[],[],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
+            dict['message'] = 'Email sent!'
             return dict
 

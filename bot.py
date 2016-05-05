@@ -1,9 +1,10 @@
 import ircmodule
 import statemanager
+import pickle
 
 
 '''
-###file paths###
+###android file paths###
 dpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/data.pickle'
 lpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/logs.pickle'
 tpl = '/storage/emulated/0/com.hipipal.qpyplus/scripts3/muse-bot/twitter.pickle'
@@ -13,9 +14,13 @@ lpl = 'logs.pickle'
 tpl = 'twitter.pickle'
 annpl = 'ann.pickle'
 
-irc = ircmodule.IRC()
+f = open('config.pickle','rb')
+config = pickle.load(f)
+f.close()
+
+irc = ircmodule.IRC(config)
 irc.start()
-sm = statemanager.StateManager(irc,dpl,lpl,tpl,annpl)    #putting irc object in to support the use of the irc.send() function in threads
+sm = statemanager.StateManager(config,irc,dpl,lpl,tpl,annpl)    #putting irc object in to support the use of the irc.send() function in threads
 while True:
     dict = irc.inputs.get()
     irc.send(sm.main(dict))

@@ -6,12 +6,10 @@ import time
 import pickle
 
 class IRC(threading.Thread):
-    def __init__(self):
+    def __init__(self, config):
         threading.Thread.__init__(self)
         self.server = "irc.rizon.net"       #settings
-        f = open('config.pickle', 'rb')
-        self.config = pickle.load(f)
-        f.close()
+        self.config = config
         #This is the default channel that the formatter function uses for 'QUIT'
         self.channel = self.config['channels'][0]['name']
         self.botnick = self.config['name']
