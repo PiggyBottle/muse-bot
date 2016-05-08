@@ -24,11 +24,8 @@ class StateManager():
         self.lpl = lpl
         self.tpl = tpl
         self.annpl = annpl
-        #self.twitter = twitter.Twitter(irc, tpl)
-        #self.twitter.start()
-        #self.ann = ann.ANN(irc,annpl)
-        #self.ann.start()
-        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl)
+        self.master = config['master']
+        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'])
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
@@ -45,7 +42,6 @@ class StateManager():
             self.logger.log(dict,self.namelist)
         if not (permissions == 'open' or permissions == 'do not log'):
             return
-
 
         #Checking namelist, joins, parts, kicks, nick changes and quits
         if dict['type'] == 'NAMELIST':
@@ -70,6 +66,11 @@ class StateManager():
             for a in self.namelist.keys():
                 if dict['name'] in self.namelist[a]:
                     del self.namelist[a][self.namelist[a].index(dict['name'])]
+        #Update trackers
+        if dict['type'] == 'NAMELIST' or (dict['type'] in ['PART', 'KICK'] and dict['name'] == self.master):
+            self.trackers.update_status(dict, self.namelist)
+        elif (dict['type'] == 'NICK' and (self.master == dict['name'] or self.master == dict['message'])) or dict['type'] in ['QUIT', 'JOIN'] and dict['name'] == self.master:
+            self.trackers.update_status(dict)
 
 
         message = dict['message']
