@@ -15,14 +15,6 @@ def channels(reader):
         dict = {'name':name,'password':password}
         chanlist.append(dict)
     return chanlist
-####################################
-    chandict = {}
-    # Read in the channel names and passwords, separating them into lists
-    channames = reader.get('channels', 'names').split(",")
-    chanpass = reader.get('channels', 'password').split(",")
-    for a in range(0,len(channames)):
-        chandict[channames[a]] = chanpass[a]
-    return chandict
 
 def server(reader):
     # Read in the name of the bot and its password

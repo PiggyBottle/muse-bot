@@ -7,8 +7,7 @@ import blackjack
 import logger
 import spamguard
 import helper
-import twitter
-import ann
+import trackers
 import tell
 import emailer
 
@@ -24,17 +23,31 @@ class StateManager():
         self.dpl = dpl
         self.lpl = lpl
         self.tpl = tpl
-        self.twitter = twitter.Twitter(irc, tpl)
-        self.twitter.start()
-        self.ann = ann.ANN(irc,annpl)
-        self.ann.start()
+        self.annpl = annpl
+        #self.twitter = twitter.Twitter(irc, tpl)
+        #self.twitter.start()
+        #self.ann = ann.ANN(irc,annpl)
+        #self.ann.start()
+        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl)
+        self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.emailer = emailer.Emailer(config)
         self.namelist = {}
     def main(self, dict):
-        #Checking namelist, joins, parts, kicks, nick changes happen before logging, but the quit will happen after.
+
+        #Checking Spamguard permissions
+        dict, permissions = self.spamguard.check(dict,self.state)
+        if 'SpamGuard: ' in dict['message']:
+            return dict
+        if not permissions == 'block' and not permissions == 'do not log':
+            self.logger.log(dict,self.namelist)
+        if not (permissions == 'open' or permissions == 'do not log'):
+            return
+
+
+        #Checking namelist, joins, parts, kicks, nick changes and quits
         if dict['type'] == 'NAMELIST':
             self.namelist[dict['channel']] = dict['message'].translate({ord('&'):'',ord('%'):'',ord('+'):'',ord('@'):''}).split()
         elif dict['type'] == 'JOIN':
@@ -52,21 +65,8 @@ class StateManager():
                 if dict['name'] in self.namelist[a]:
                     del self.namelist[a][self.namelist[a].index(dict['name'])]
                     self.namelist[a].append(dict['message'])
-
-
-
-        #Checking Spamguard permissions
-        dict, permissions = self.spamguard.check(dict,self.state)
-        if 'SpamGuard: ' in dict['message']:
-            return dict
-        if not permissions == 'block' and not permissions == 'do not log':
-            self.logger.log(dict,self.namelist)
-        if not (permissions == 'open' or permissions == 'do not log'):
-            return
-
-
         #Letting bot delete QUITTED nick from namelist
-        if dict['type'] == 'QUIT':
+        elif dict['type'] == 'QUIT':
             for a in self.namelist.keys():
                 if dict['name'] in self.namelist[a]:
                     del self.namelist[a][self.namelist[a].index(dict['name'])]

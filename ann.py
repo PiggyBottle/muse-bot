@@ -1,15 +1,12 @@
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-import threading
 import pickle
-import time
 
 
 
-class ANN(threading.Thread):
+class ANN():
     def __init__(self,irc,annpl):
-        threading.Thread.__init__(self)
         self.irc = irc
         self.annpl = annpl
         self.url = "http://www.animenewsnetwork.com/all/rss.xml"
@@ -44,18 +41,16 @@ class ANN(threading.Thread):
                         latest_feed = feed.find('title').text
                     feed_number += 1
     def run(self):
-        while True:
-            time.sleep(30)
-            print('checking ANN\'s RSS feed...')
-            try:
-                response = urllib.request.urlopen(self.url)
-                response= response.read().decode()
-                tree = ET.fromstring(response)
-                buffer = self.loop(tree)
-                if not buffer == None:
-                    dict = self.dict_template
-                    dict['message'] = buffer
-                    self.irc.send(dict)
-            except Exception as e:
-                print(e)
+        print('checking ANN\'s RSS feed...')
+        try:
+            response = urllib.request.urlopen(self.url)
+            response= response.read().decode()
+            tree = ET.fromstring(response)
+            buffer = self.loop(tree)
+            if not buffer == None:
+                dict = self.dict_template
+                dict['message'] = buffer
+                self.irc.send(dict)
+        except Exception as e:
+            print(e)
 
