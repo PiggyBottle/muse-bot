@@ -1,6 +1,4 @@
-import datetime
-import time
-import pickle
+import datetime, time, pickle, re
 
 days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
 
@@ -31,23 +29,25 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
-        data['usertimezones'][name.lower()] = timezone
+        data['usertimezones'][name] = timezone
         f = open(self.dpl,'wb')
         pickle.dump(data,f)
         f.close()
         return 'Timezone set to '+str(timezone)+', remember to update this when DST starts/ends!'
 
     def read_time(self, name):
+        name = name.replace(' ','')
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
         found = False
         if len(name) == 0:
             return 'Error: Please enter a user\'s name.'
-        for a in data['usertimezones'].keys():
-            if name.lower().replace(' ','') in a:
+        check = re.compile(, re.IGNORECASE)
+        for user in data['usertimezones'].keys():
+            if check.match(user):
                 found = True
-                timezone = data['usertimezones'][a]
+                timezone = data['usertimezones'][user]
                 time = datetime.datetime.utcnow() + datetime.timedelta(hours=timezone)
                 weekday = days[time.weekday()]
                 if time.hour < 10:
@@ -58,11 +58,11 @@ class TimeZoneCheck():
                     minute_zero = str(0)
                 else:
                     minute_zero = ''
-                if a[-1] == 's':
-                    a = str(a) + '\''
+                if user[-1] == 's':
+                    name = str(name) + '\''
                 else:
-                    a = str(a) + '\'s'
-                return 'It is currently '+weekday+' '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+a+' time zone.'
+                    name = str(name) + '\'s'
+                return 'It is currently '+weekday+' '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+name+' time zone.'
         if found == False:
             return 'Either this person has not registered, or such person does not exist.'
 
@@ -71,7 +71,9 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
-        if name in data['usertimezones'].keys():
-            return data['usertimezones'][name.lower()]
+        check = re.compile(name, re.IGNORECASE)
+        for nickname in data['usertimezones'].keys():
+            if check.match(nickname):
+                return data['usertimezones'][nickname]
         else:
             return None
