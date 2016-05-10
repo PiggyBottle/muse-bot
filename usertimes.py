@@ -29,6 +29,11 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
+        checktext = '\S*' + name + '\S*'
+        check = re.compile(checktext, re.IGNORECASE)
+        for user in data['usertimezones'].keys():
+            if check.match(user):
+                data['usertimezones'].pop(user, None)
         data['usertimezones'][name] = timezone
         f = open(self.dpl,'wb')
         pickle.dump(data,f)
@@ -43,7 +48,8 @@ class TimeZoneCheck():
         found = False
         if len(name) == 0:
             return 'Error: Please enter a user\'s name.'
-        check = re.compile(name, re.IGNORECASE)
+        checktext = '\S*' + name + '\S*'
+        check = re.compile(checktext, re.IGNORECASE)
         for user in data['usertimezones'].keys():
             if check.match(user):
                 found = True
@@ -58,11 +64,11 @@ class TimeZoneCheck():
                     minute_zero = str(0)
                 else:
                     minute_zero = ''
-                if name[-1] == 's':
-                    name = str(name) + '\''
+                if user[-1] == 's':
+                    user = str(user) + '\''
                 else:
-                    name = str(name) + '\'s'
-                return 'It is currently '+weekday+' '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+name+' time zone.'
+                    user = str(user) + '\'s'
+                return 'It is currently '+weekday+' '+hour_zero+str(time.hour)+':'+minute_zero+str(time.minute)+' in '+user+' time zone.'
         if found == False:
             return 'Either this person has not registered, or such person does not exist.'
 
@@ -71,7 +77,8 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
-        check = re.compile(name, re.IGNORECASE)
+        checktext = '\S*' + name + '\S*'
+        check = re.compile(checktext, re.IGNORECASE)
         for nickname in data['usertimezones'].keys():
             if check.match(nickname):
                 return data['usertimezones'][nickname]
