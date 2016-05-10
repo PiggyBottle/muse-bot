@@ -33,7 +33,7 @@ class TimeZoneCheck():
         check = re.compile(checktext, re.IGNORECASE)
         for user in data['usertimezones'].keys():
             if check.match(user):
-                data['usertimezones'][user] = tz
+                data['usertimezones'][user] = timezone
         else:
             data['usertimezones'][name] = timezone
         f = open(self.dpl,'wb')
