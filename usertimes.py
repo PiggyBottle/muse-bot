@@ -49,7 +49,7 @@ class TimeZoneCheck():
         found = False
         if len(name) == 0:
             return 'Error: Please enter a user\'s name.'
-        if not re.match("^[A-Za-z0-9_-\\\[\]{}^`|]*$", name):
+        if not re.match("^[A-Za-z0-9_\\\[\]{}^`|-]*$", name):
             return 'Error: Improper character(s) input.'
         checktext = '\S*' + name + '\S*'
         check = re.compile(checktext, re.IGNORECASE)
