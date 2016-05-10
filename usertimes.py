@@ -29,12 +29,13 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
-        checktext = '\S*' + name + '\S*'
+        checktext = '^' + name + '$'
         check = re.compile(checktext, re.IGNORECASE)
         for user in data['usertimezones'].keys():
             if check.match(user):
-                data['usertimezones'].pop(user, None)
-        data['usertimezones'][name] = timezone
+                data['usertimezones'][user] = tz
+        else:
+            data['usertimezones'][name] = timezone
         f = open(self.dpl,'wb')
         pickle.dump(data,f)
         f.close()
