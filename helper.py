@@ -3,7 +3,10 @@ class Helper():
         self.list = 'poll, anime, [time, settimezone], blackjack, [money, loan, debt, pay], log'
     def execute(self, dict):
         if len(dict['message']) <= 6:
-            dict['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['channel'],self.list)
+            if dict['private_messaged'] == False:
+                dict['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['channel'],self.list)
+            elif dict['private_messaged'] == True:
+                dict['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['name'],self.list)
             return dict
         elif len(dict['message']) > 6:
             option = dict['message'][6:]

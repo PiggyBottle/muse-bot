@@ -31,7 +31,6 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.emailer = emailer.Emailer(config)
-        self.namelist = {}
     def main(self, dict):
 
         #Checking Spamguard permissions
@@ -39,39 +38,13 @@ class StateManager():
         if 'SpamGuard: ' in dict['message']:
             return dict
         if not permissions == 'block' and not permissions == 'do not log':
-            self.logger.log(dict,self.namelist)
+            self.logger.log(dict,self.trackers.namelist)
         if not (permissions == 'open' or permissions == 'do not log'):
             return
 
-        #Checking namelist, joins, parts, kicks, nick changes and quits
-        if dict['type'] == 'NAMELIST':
-            self.namelist[dict['channel']] = dict['message'].translate({ord('&'):'',ord('%'):'',ord('+'):'',ord('@'):''}).split()
-        elif dict['type'] == 'JOIN':
-            #sometimes, the JOIN message can come before the channel's userlist appears, so the bot will ignore it.
-            try:
-                self.namelist[dict['channel']].append(dict['name'])
-            except:
-                pass
-        elif dict['type'] == 'PART':
-            del self.namelist[dict['channel']][self.namelist[dict['channel']].index(dict['name'])]
-        elif dict['type'] == 'KICK':
-            del self.namelist[dict['channel']][self.namelist[dict['channel']].index(dict['name'])]
-        elif dict['type'] == 'NICK':
-            for a in self.namelist.keys():
-                if dict['name'] in self.namelist[a]:
-                    del self.namelist[a][self.namelist[a].index(dict['name'])]
-                    self.namelist[a].append(dict['message'])
-        #Letting bot delete QUITTED nick from namelist
-        elif dict['type'] == 'QUIT':
-            for a in self.namelist.keys():
-                if dict['name'] in self.namelist[a]:
-                    del self.namelist[a][self.namelist[a].index(dict['name'])]
-        #Update trackers
-        if dict['type'] == 'NAMELIST' or (dict['type'] in ['PART', 'KICK'] and dict['name'] == self.master):
-            self.trackers.update_status(dict, self.namelist)
-        elif (dict['type'] == 'NICK' and (self.master == dict['name'] or self.master == dict['message'])) or dict['type'] in ['QUIT', 'JOIN'] and dict['name'] == self.master:
-            self.trackers.update_status(dict)
-
+        #Updating trackers namelist
+        if dict['type'] in ['NAMELIST', 'PART', 'KICK', 'QUIT', 'JOIN', 'NICK']:
+            self.trackers.update_namelist(dict)
 
         message = dict['message']
         '''
