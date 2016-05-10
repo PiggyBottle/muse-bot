@@ -43,7 +43,7 @@ class TimeZoneCheck():
         found = False
         if len(name) == 0:
             return 'Error: Please enter a user\'s name.'
-        check = re.compile(, re.IGNORECASE)
+        check = re.compile(name, re.IGNORECASE)
         for user in data['usertimezones'].keys():
             if check.match(user):
                 found = True
