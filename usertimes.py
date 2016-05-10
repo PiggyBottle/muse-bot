@@ -58,7 +58,7 @@ class TimeZoneCheck():
                     minute_zero = str(0)
                 else:
                     minute_zero = ''
-                if user[-1] == 's':
+                if name[-1] == 's':
                     name = str(name) + '\''
                 else:
                     name = str(name) + '\'s'
