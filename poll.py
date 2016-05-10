@@ -35,7 +35,6 @@ class Poll():
              output += 'Apparently nobody cares about this.' + '\r\n' + dict['type'] + ' ' + dict['channel'] + ' :'
         else:
             output += 'We have a tie!' + '\r\n' + dict['type'] + ' ' + dict['channel'] + ' :'
-        output += str(self.score)
-        'There were '+str(self.score['y'])+' votes for \'Yes\' and '+str(self.score['n'])+' votes for \'No\'.'
+        output += 'There were '+str(self.score['y'])+' votes for \'Yes\' and '+str(self.score['n'])+' votes for \'No\'.'
         dict['message'] = output
         self.irc.send(dict)
