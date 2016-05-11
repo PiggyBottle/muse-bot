@@ -85,6 +85,8 @@ class AnimeTiming():
             f = open(self.dpl,'rb')
             data = pickle.load(f)
             f.close()
+            if self.compare_dicts(anime_showtimes, data['anime_showtime']):
+                return
             data['anime_showtime'] = anime_showtimes
             f = open(self.dpl,'wb')
             pickle.dump(data,f)
@@ -119,3 +121,16 @@ class AnimeTiming():
             except Exception as e:
                 print(str(e))
         return anime_showtimes
+
+    def compare_dicts(self, new, old):
+        if len(new.keys()) != len(old.keys()):
+            return False
+        else:
+            try:
+                for a in new.keys():
+                    if new[a] != old[a]:
+                        return False
+            except KeyError:
+                return False
+            return sorted(new.keys()) == sorted(old.keys())
+
