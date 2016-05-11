@@ -1,16 +1,16 @@
 import pickle
 import datetime
 import re
-import datetime
 from html.parser import HTMLParser
 import urllib.request
+import time
 
 
 class AnimeTiming():
-    def __init__(self):
-        pass
-    def execute(self, w, datapicklelocation):
-        self.dpl = datapicklelocation
+    def __init__(self,dpl):
+        self.dpl = dpl
+        self.last_checked_HS = 0
+    def execute(self, w):
         self.word = w
         self.time_left(self.word)
         try:
@@ -58,7 +58,9 @@ class AnimeTiming():
                 return days, hours, minutes, anime_showtime[a][3]
 
 
-    def check_website(self):
+    def check_website(self, interval):
+        if self.last_checked_HS != 0 and time.time() - self.last_checked_HS < interval:
+            return
         try:
             url = 'http://horriblesubs.info/release-schedule/'
             url2 = 'http://www.timeanddate.com/time/zone/usa/los-angeles'
@@ -80,7 +82,14 @@ class AnimeTiming():
             respData = resp.read().decode()
             string = respData.split('\n')
             anime_showtimes = self.parseHTML(string,timezoneoffset)
-            return anime_showtimes
+            f = open(self.dpl,'rb')
+            data = pickle.load(f)
+            f.close()
+            data['anime_showtime'] = anime_showtimes
+            f = open(self.dpl,'wb')
+            pickle.dump(data,f)
+            f.close()
+            self.last_checked_HS = int(time.time())
         except Exception as e:
             print(str(e))
     def parseHTML(self,string,timezoneoffset):

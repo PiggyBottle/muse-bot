@@ -25,7 +25,7 @@ class StateManager():
         self.tpl = tpl
         self.annpl = annpl
         self.master = config['master']
-        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'])
+        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl))
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
@@ -56,8 +56,8 @@ class StateManager():
                 return buffer
         '''
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
-            a = animetiming.AnimeTiming()
-            dict['message'] = a.execute(message[7:],self.dpl)
+            a = animetiming.AnimeTiming(self.dpl)
+            dict['message'] = a.execute(message[7:])
             return dict
         elif self.commands['time'] == True and (message.startswith('$time') or message.startswith('$settimezone ')):
             a = usertimes.TimeZoneCheck()
