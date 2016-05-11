@@ -62,6 +62,7 @@ class AnimeTiming():
         if self.last_checked_HS != 0 and time.time() - self.last_checked_HS < interval:
             return
         try:
+            print('checking HS...')
             url = 'http://horriblesubs.info/release-schedule/'
             url2 = 'http://www.timeanddate.com/time/zone/usa/los-angeles'
 
@@ -86,6 +87,7 @@ class AnimeTiming():
             data = pickle.load(f)
             f.close()
             if self.compare_dicts(anime_showtimes, data['anime_showtime']):
+                self.last_checked_HS = int(time.time())
                 return
             data['anime_showtime'] = anime_showtimes
             f = open(self.dpl,'wb')
