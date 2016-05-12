@@ -138,7 +138,7 @@ class StateManager():
             dict = self.logger.read(dict)
             return dict
         elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
-            dict['message'] = '\x01ACTION looks at %s' %(dict['name'])
+            dict['message'] = '\x01ACTION looks at %s\x01' %(dict['name'])
             return dict
         elif message.startswith ('$NDAemail '):
             #Emails sent represent NanoDesu Translations. Don't misuse this.
