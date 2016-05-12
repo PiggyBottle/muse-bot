@@ -1,6 +1,13 @@
-import datetime, time, pickle, re
+import datetime, time, pickle, re, string
 
 days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
+
+def get_indices(s, char):
+    """
+    Find and return a list containing the indices of a string where
+    a character is found.
+    """
+    return [i for i, letter in enumerate(s) if letter == char]
 
 class TimeZoneCheck():
     def __init__(self):
@@ -51,6 +58,10 @@ class TimeZoneCheck():
             return 'Error: Please enter a user\'s name.'
         if not re.match("^[A-Za-z0-9_\\\[\]{}^`|-]*$", name):
             return 'Error: Improper character(s) input.'
+        name = name.replace('[', '\[')
+        name = name.replace(']', '\]')
+        name = name.replace('^', '\^')
+        name = name.replace('\\', "\\")
         checktext = '\S*' + name + '\S*'
         check = re.compile(checktext, re.IGNORECASE)
         for user in data['usertimezones'].keys():

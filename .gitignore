@@ -1,2 +1,3 @@
 *.pickle
 setup.cfg
+*.pyc
