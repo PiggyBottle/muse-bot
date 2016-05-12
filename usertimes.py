@@ -2,13 +2,6 @@ import datetime, time, pickle, re, string
 
 days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
 
-def get_indices(s, char):
-    """
-    Find and return a list containing the indices of a string where
-    a character is found.
-    """
-    return [i for i, letter in enumerate(s) if letter == char]
-
 class TimeZoneCheck():
     def __init__(self):
         pass
