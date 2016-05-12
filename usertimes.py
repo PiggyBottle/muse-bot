@@ -1,4 +1,4 @@
-import datetime, time, pickle, re
+import datetime, time, pickle, re, string
 
 days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
 
@@ -51,6 +51,10 @@ class TimeZoneCheck():
             return 'Error: Please enter a user\'s name.'
         if not re.match("^[A-Za-z0-9_\\\[\]{}^`|-]*$", name):
             return 'Error: Improper character(s) input.'
+        name = name.replace('[', '\[')
+        name = name.replace(']', '\]')
+        name = name.replace('^', '\^')
+        name = name.replace('\\', "\\")
         checktext = '\S*' + name + '\S*'
         check = re.compile(checktext, re.IGNORECASE)
         for user in data['usertimezones'].keys():
