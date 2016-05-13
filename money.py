@@ -32,7 +32,7 @@ class Money():
             return 0
         return data[name.lower()]
     def report(self, content):
-        content['message'] = '%s has %d NanoDollars.' %(dict['name'], self.check(dict['name'].lower()))
+        content['message'] = '%s has %d NanoDollars.' %(content['name'], self.check(content['name'].lower()))
         return content
     def pay_debt(self, content):
         if len(content['message']) <= 5:

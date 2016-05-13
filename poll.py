@@ -12,8 +12,8 @@ class Poll():
         if self.started == False:
             self.started = True
             self.channel = content['channel']  #to ensure that only voters in the same channel count
-            return str('Poll has started!\r\n%s %s :Topic: \"%s\"\r\n%s %s :Type y/n to vote!' %(content['type'], dict['channel'], dict['message'][6:], dict['type'], dict['channel']))    #every new line out needs to have 'PRIVMSG #channel name :text'
-        if (content['message'].lower() == 'y' or dict['message'].lower() == 'n') and dict['channel'] == self.channel and not dict['name'] in self.voters:
+            return str('Poll has started!\r\n%s %s :Topic: \"%s\"\r\n%s %s :Type y/n to vote!' %(content['type'], content['channel'], content['message'][6:], content['type'], content['channel']))    #every new line out needs to have 'PRIVMSG #channel name :text'
+        if (content['message'].lower() == 'y' or content['message'].lower() == 'n') and content['channel'] == self.channel and not content['name'] in self.voters:
             self.voters.append(content['name'])
             self.score[content['message'].lower()] += 1
         return
@@ -30,11 +30,11 @@ class Poll():
         else:
             self.answer = 'draw'
         if self.answer == 'YES!' or self.answer == 'NO!':
-            output += 'The majority has spoken: '+self.answer + '\r\n' + content['type'] + ' ' + dict['channel'] + ' :'
+            output += 'The majority has spoken: '+self.answer + '\r\n' + content['type'] + ' ' + content['channel'] + ' :'
         elif self.answer == 'zero':
-             output += 'Apparently nobody cares about this.' + '\r\n' + content['type'] + ' ' + dict['channel'] + ' :'
+             output += 'Apparently nobody cares about this.' + '\r\n' + content['type'] + ' ' + content['channel'] + ' :'
         else:
-            output += 'We have a tie!' + '\r\n' + content['type'] + ' ' + dict['channel'] + ' :'
+            output += 'We have a tie!' + '\r\n' + content['type'] + ' ' + content['channel'] + ' :'
         output += ''+str(self.score['y'])+' vote(s) for \'Yes\' and '+str(self.score['n'])+' vote(s) for \'No\'!'
         content['message'] = output
         self.irc.send(content)

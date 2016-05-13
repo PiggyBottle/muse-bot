@@ -17,22 +17,22 @@ class Trackers(threading.Thread):
     def update_namelist(self, content):
         #Checking namelist, joins, parts, kicks, nick changes and quits
         if content['type'] == 'NAMELIST':
-            self.namelist[content['channel']] = dict['message'].translate({ord('&'):'',ord('%'):'',ord('+'):'',ord('@'):''}).split()
+            self.namelist[content['channel']] = content['message'].translate({ord('&'):'',ord('%'):'',ord('+'):'',ord('@'):''}).split()
             self.update_status(content, self.namelist)
         elif content['type'] == 'JOIN':
             #sometimes, the JOIN message can come before the channel's userlist appears, so the bot will ignore it.
             try:
-                self.namelist[content['channel']].append(dict['name'])
+                self.namelist[content['channel']].append(content['name'])
                 if content['name'] == self.master:
                     self.update_status(content)
             except:
                 pass
         elif content['type'] == 'PART':
-            del self.namelist[content['channel']][self.namelist[dict['channel']].index(dict['name'])]
+            del self.namelist[content['channel']][self.namelist[content['channel']].index(content['name'])]
             if content['name'] == self.master:
                 self.update_status(content, self.namelist)
         elif content['type'] == 'KICK':
-            del self.namelist[content['channel']][self.namelist[dict['channel']].index(dict['name'])]
+            del self.namelist[content['channel']][self.namelist[content['channel']].index(content['name'])]
             if content['name'] == self.master:
                 self.update_status(content,self.namelist)
         elif content['type'] == 'NICK':
@@ -40,7 +40,7 @@ class Trackers(threading.Thread):
                 if content['name'] in self.namelist[a]:
                     del self.namelist[a][self.namelist[a].index(content['name'])]
                     self.namelist[a].append(content['message'])
-            if content['name'] == self.master or dict['message'] == self.master:
+            if content['name'] == self.master or content['message'] == self.master:
                 self.update_status(content)
         #Letting bot delete QUITTED nick from namelist
         elif content['type'] == 'QUIT':
@@ -58,7 +58,7 @@ class Trackers(threading.Thread):
         elif content['type'] == 'QUIT':
             self.master_online_status = False
         elif content['type'] == 'NICK':
-            #content['name'] is old nick, dict['message'] is new
+            #content['name'] is old nick, content['message'] is new
             if content['name'] == self.master:
                 self.master_online_status = False
             elif content['message'] == self.master:

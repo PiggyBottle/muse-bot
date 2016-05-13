@@ -33,10 +33,10 @@ class Logger():
             f = open(self.lpl, 'wb')
             pickle.dump(self.data, f)
             f.close()
-        elif not content['channel'] == None and not dict['private_messaged'] == True:
+        elif not content['channel'] == None and not content['private_messaged'] == True:
             if not content['channel'] in self.data.keys():
                 self.data[content['channel']] = []
-            self.data[content['channel']].append(dict)
+            self.data[content['channel']].append(content)
             f = open(self.lpl, 'wb')
             pickle.dump(self.data, f)
             f.close()

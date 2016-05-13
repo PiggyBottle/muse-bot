@@ -34,7 +34,7 @@ class StateManager():
     def main(self, content):
 
         #Checking Spamguard permissions
-        content, permissions = self.spamguard.check(dict,self.state)
+        content, permissions = self.spamguard.check(content,self.state)
         if 'SpamGuard: ' in content['message']:
             return content
         if not permissions == 'block' and not permissions == 'do not log':
@@ -61,12 +61,12 @@ class StateManager():
             return content
         elif self.commands['time'] == True and (message.startswith('$time') or message.startswith('$settimezone ')):
             a = usertimes.TimeZoneCheck()
-            content['message'] = a.execute(dict, self.dpl)
+            content['message'] = a.execute(content, self.dpl)
             return content
         elif self.commands['poll'] == True and content['private_messaged'] == False and message.startswith('$poll ') and len(message) > 6 and self.state != 'poll':
             self.state = 'poll'
             self.function = poll.Poll(self.irc)
-            content['message'] = self.function.execute(dict)
+            content['message'] = self.function.execute(content)
             #plus start thread over here
             t = threading.Timer(15,self.function.complete, [content, self])
             t.start()
@@ -93,7 +93,7 @@ class StateManager():
                 self.state = 'main'
                 content['message'] = 'Game closed.'
                 return content
-            elif content['type'] == 'NICK' and dict['name'].lower() in self.function.lower_keys():
+            elif content['type'] == 'NICK' and content['name'].lower() in self.function.lower_keys():
                 self.commands['poll'],self.commands['loan'] = True,True
                 self.state = 'main'
                 content['message'] = 'A nick change has been detected. Game closing.'
@@ -104,7 +104,7 @@ class StateManager():
             return self.function.execute(content)
         elif self.commands['loan'] == True and not self.state == 'loan' and message.startswith('$loan'):
             self.function = money.Money(self.dpl)
-            content,move_on = self.function.loan(dict)
+            content,move_on = self.function.loan(content)
             if move_on == False:
                 self.function = None
             elif move_on == True:
@@ -112,7 +112,7 @@ class StateManager():
                 self.commands['blackjack'],self.commands['loan'] = False,False
             return content
         elif self.state == 'loan':
-            content,finish = self.function.loan(dict)
+            content,finish = self.function.loan(content)
             if finish:
                 self.function = None
                 self.commands['blackjack'],self.commands['loan'] = True,True
@@ -132,13 +132,13 @@ class StateManager():
             return a.pay_debt(content)
         elif message.startswith('$help') and self.state == 'main':
             a = helper.Helper()
-            content = a.execute(dict)
+            content = a.execute(content)
             return content
         elif message.startswith('$log'):
-            content = self.logger.read(dict)
+            content = self.logger.read(content)
             return content
         elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
-            content['message'] = '\x01ACTION looks at %s\x01' %(dict['name'])
+            content['message'] = '\x01ACTION looks at %s\x01' %(content['name'])
             return content
         elif message.startswith ('$NDAemail '):
             #Emails sent represent NanoDesu Translations. Don't misuse this.

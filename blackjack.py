@@ -49,7 +49,7 @@ class Game():
             del self.bets_remaining[self.bets_remaining.index(content['name'])]
             if len(self.bets_remaining) < 1:
                 self.state = 'main'
-                content['message'] = self.start_game(dict)
+                content['message'] = self.start_game(content)
                 return content
     def deal_cards(self):   #For use at start of game
         for a in self.players.keys():
@@ -71,8 +71,8 @@ class Game():
         self.deal_cards()
         buffer = ''
         for a in self.turnorder:
-            buffer += self.players[a].name + ' (%d): ' %(self.players[a].active_hand_value()) + self.players[a].print_hand() + '\r\n%s %s :' %(content['type'], dict['channel'])
-        buffer += self.dealer.name + ': ' + self.dealer.peek() + '\r\n%s %s :$hit, $doubledown, $split, $stand or $quit.' %(content['type'], dict['channel'])
+            buffer += self.players[a].name + ' (%d): ' %(self.players[a].active_hand_value()) + self.players[a].print_hand() + '\r\n%s %s :' %(content['type'], content['channel'])
+        buffer += self.dealer.name + ': ' + self.dealer.peek() + '\r\n%s %s :$hit, $doubledown, $split, $stand or $quit.' %(content['type'], content['channel'])
         return buffer
     def add_player(self, content):
         a = money.Money(self.dpl)
@@ -116,11 +116,11 @@ class Game():
         hand_value = player.active_hand_value()
         buffer = '%s (%d): %s' %(name, hand_value, player.print_hand())
         if hand_value > 21:
-            buffer += '\r\n%s %s :Busted!\r\n%s %s :' %(content['type'], dict['channel'], dict['type'], dict['channel'])
+            buffer += '\r\n%s %s :Busted!\r\n%s %s :' %(content['type'], content['channel'], content['type'], content['channel'])
             content['message'] = buffer
             return self.stand(content)
         elif must_stand:
-            buffer += '\r\n%s %s :' %(content['type'], dict['channel'])
+            buffer += '\r\n%s %s :' %(content['type'], content['channel'])
             content['message'] = buffer
             return self.stand(content)
         else:
@@ -171,7 +171,7 @@ class Game():
             buffer = ''
             for i,a in enumerate(player.hand):
                 player.hand[i].append(self.deck.pop())
-                buffer += '%s (%d): %s\r\n%s %s :' %(name, player.active_hand_value(), player.print_hand(), content['type'], dict['channel'])
+                buffer += '%s (%d): %s\r\n%s %s :' %(name, player.active_hand_value(), player.print_hand(), content['type'], content['channel'])
                 if i == 0:
                     player.active_hand_number = 2
                 else:
@@ -195,14 +195,14 @@ class Game():
             name = self.turnorder[0]
             player = self.players[name]
             hand_value = player.active_hand_value()
-            buffer += '%s\'s turn!\r\n%s %s :%s (%d): %s' %(name, content['type'], dict['channel'], name, hand_value, player.print_hand())
+            buffer += '%s\'s turn!\r\n%s %s :%s (%d): %s' %(name, content['type'], content['channel'], name, hand_value, player.print_hand())
             content['message'] = buffer
             return content
         else:   #Remember to insert 'endgame' function.
             content['message'] = buffer
             return self.end_game(content)
     def end_game(self, content):
-        nextline = '\r\n%s %s :' %(content['type'], dict['channel'])
+        nextline = '\r\n%s %s :' %(content['type'], content['channel'])
         buffer = content['message']
         self.dealer_draw()
         buffer += 'All players have played!' + nextline
@@ -277,7 +277,7 @@ class Game():
             elif len(list) > 1 and player.active_hand_number == 2:
                 player.active_hand_number = 1
     def execute(self, content):
-        if (content['type'] == 'QUIT' or (dict['type'] == 'PART' and dict['channel'] == self.channel)) and dict['name'].lower() in self.lower_keys():
+        if (content['type'] == 'QUIT' or (content['type'] == 'PART' and content['channel'] == self.channel)) and content['name'].lower() in self.lower_keys():
             return self.remove_player(content)
         #Making sure only messages sent from the initiating channel are registered
         if not content['channel'] == self.channel:
@@ -296,7 +296,7 @@ class Game():
         elif self.state == 'join_phase' and command.startswith('$start'):
             self.state = 'betting_phase'
             self.bets_remaining = self.generate_bets_remaining()
-            content['message'] = 'Players: ' + str(self.turnorder).strip('][').replace("\'", "") + '\r\n%s %s :Input your bets in integer numbers' %(dict['type'], self.channel)
+            content['message'] = 'Players: ' + str(self.turnorder).strip('][').replace("\'", "") + '\r\n%s %s :Input your bets in integer numbers' %(content['type'], self.channel)
             return content
         elif self.state == 'betting_phase' and name in self.bets_remaining:
             return self.set_bet(content)
@@ -313,7 +313,7 @@ class Game():
                 return self.doubledown(content)
             elif command.startswith('$split'):
                 return self.split(content)
-        
+
 
 
 

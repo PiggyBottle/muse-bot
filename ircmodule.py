@@ -99,9 +99,9 @@ class IRC(threading.Thread):
         if content is None:
             return
         if not content['private_messaged']:
-            text = str(content['type'] + ' ' + dict['channel'] + ' :' + dict['message'] + '\r\n')
+            text = str(content['type'] + ' ' + content['channel'] + ' :' + content['message'] + '\r\n')
         elif content['private_messaged']:
-            text = str(content['type'] + ' ' + dict['name'] + ' :' + dict['message'] + '\r\n')
+            text = str(content['type'] + ' ' + content['name'] + ' :' + content['message'] + '\r\n')
         self.irc.send(text.encode())
     def formatter(self,rawtext):
         text = rawtext.split(':', 2)
@@ -118,7 +118,7 @@ class IRC(threading.Thread):
             if not content['channel'].startswith('#'):
                 content['private_messaged'] = True
         elif 'JOIN' in text[1]:
-            content['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
+            content['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from content['message']
             content['channel'] = text[2]
             content['message'] = ''
         elif 'QUIT' in text[1]:
@@ -132,12 +132,12 @@ class IRC(threading.Thread):
             content['name'] = text[1].split('!')[0]
             content['message'] = ''
         elif 'NICK' in text[1]:
-            content['type'] = 'NICK'   #old name is dict['name'], new name is dict['message']
+            content['type'] = 'NICK'   #old name is content['name'], new name is content['message']
             content['channel'] = None
         elif 'KICK' in text[1]:
             #content['name'] is the guy who was kicked, and the kicker is in the message
             content['type'] = 'KICK'
-            content['message'] = 'was kicked by %s' %(dict['name'])
+            content['message'] = 'was kicked by %s' %(content['name'])
             content['channel'] = text[1].split('KICK ')[1].split(' ')[0]
             content['name'] = text[1].split('KICK ')[1].split(' ')[1]
             if content['name'] == self.botnick:
@@ -162,5 +162,5 @@ class IRC(threading.Thread):
             except:
                 pass
         else:
-            content['channel'], dict['type'] = (None,None)
+            content['channel'], content['type'] = (None,None)
         return content

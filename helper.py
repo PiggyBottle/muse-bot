@@ -4,9 +4,9 @@ class Helper():
     def execute(self, content):
         if len(content['message']) <= 6:
             if content['private_messaged'] == False:
-                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['channel'],self.list)
+                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(content['type'],content['channel'],self.list)
             elif content['private_messaged'] == True:
-                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['name'],self.list)
+                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(content['type'],content['name'],self.list)
             return content
         elif len(content['message']) > 6:
             option = content['message'][6:]
@@ -31,5 +31,5 @@ class Helper():
             elif option.startswith('log'):
                 content['message'] = '$log generates a log of messages you\'ve missed since you last left the channel. Requires a time zone to be set.'
             else:
-                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(dict['type'],dict['channel'],self.list)
+                content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(content['type'],content['channel'],self.list)
             return content

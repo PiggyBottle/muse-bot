@@ -11,7 +11,7 @@ class ANN():
         self.annpl = annpl
         self.url = "http://www.animenewsnetwork.com/all/rss.xml"
         self.content_template = {'type':'PRIVMSG','channel': self.irc.master,'message':'','private_messaged':False}
-        self.new_line_template = '\r\n%s %s :' %(self.content_template['type'],self.dict_template['channel'])
+        self.new_line_template = '\r\n%s %s :' %(self.content_template['type'],self.content_template['channel'])
 
         f = open(self.annpl, 'rb')
         self.data = pickle.load(f)
@@ -48,9 +48,8 @@ class ANN():
             tree = ET.fromstring(response)
             buffer = self.loop(tree)
             if not buffer == None:
-                content = self.dict_template
+                content = self.content_template
                 content['message'] = buffer
                 self.irc.send(content)
         except Exception as e:
             print(e)
-

@@ -27,7 +27,7 @@ class Tell():
         buffer = '%s, you have unread messages.' %(content['name'])
         unread_messages = 0
         names_to_delete = []
-        newline = '\r\n%s %s :' %(content['type'],dict['channel'])
+        newline = '\r\n%s %s :' %(content['type'],content['channel'])
         for name in self.data.keys():
             if name in content['name'].lower():
                 for tell in self.data[name]:
