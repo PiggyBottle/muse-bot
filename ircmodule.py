@@ -57,11 +57,23 @@ class IRC(threading.Thread):
             self.irc.connect((self.server, 6667))
             self.connect()
             while True:
+                decode_success = False
                 try:
-                    text=self.irc.recv(2040).decode()  #receive the text
+                    text=self.irc.recv(2040)  #receive the text
                 except:
                     self.disconnected = True
                     break
+                try:
+                    text = text.decode()
+                    decode_success = True
+                except:
+                    pass
+                if not decode_success:
+                    try:
+                        text = text.decode('latin-1')
+                        decode_success = True
+                    except:
+                        text = ':Decode Failure\r\n'
                 if text:
                     try:
                         print(text)

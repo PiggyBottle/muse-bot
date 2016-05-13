@@ -9,6 +9,7 @@ import time
 class AnimeTiming():
     def __init__(self,dpl):
         self.dpl = dpl
+        #Unix time when HorribleSubs' website was last checked.
         self.last_checked_HS = 0
     def execute(self, w):
         self.word = w
@@ -22,6 +23,8 @@ class AnimeTiming():
         except:
             return 'Error: Anime not found'
         
+
+    #This function is used for self.time_left(), and provides no. of days remaining
     def day_counter(self,date):
         counter = 0
         start_counting = False
@@ -37,6 +40,7 @@ class AnimeTiming():
                 counter +=1
                 break
         return counter
+
     def time_left(self,w):
         f = open(self.dpl,'rb')
         anime_showtime = pickle.load(f)['anime_showtime']
