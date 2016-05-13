@@ -46,6 +46,10 @@ class TimeZoneCheck():
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
+        name = name.replace('[', '\[')
+        name = name.replace(']', '\]')
+        name = name.replace('^', '\^')
+        name = name.replace('\\', "\\")
         checktext = '^' + name + '$'
         check = re.compile(checktext, re.IGNORECASE)
 
