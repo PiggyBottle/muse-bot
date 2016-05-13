@@ -3,6 +3,9 @@ import datetime, time, pickle, re, string
 days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ]
 
 class TimeZoneCheck():
+    """
+    The object that handles all of muse's time-related functions.
+    """
     def __init__(self):
         pass
     def execute(self, dict, dpl):
@@ -23,6 +26,9 @@ class TimeZoneCheck():
             return self.read_time(self.name)
 
     def set_time(self, name, tz):
+        """
+        Set a user's timezone for use with time-based commands.
+        """
         #Brute force technique to allow only valid time zones.
         if tz not in ['-12','-11','-10','-9.5','-9','-8.5','-8','-7','-6','-5','-5','-4','-3.5','-3','-2','-1','0','1','2','3','3','4','4.5','5','5.5','5.75','6','6.5','7','8','8.5','8.75','9','9.5','10','10.5','11','12','12.75','13','14']:
             return 'Invalid Time Zone'
@@ -35,11 +41,15 @@ class TimeZoneCheck():
         #UTC timezones cannot be <-12 and >14
         if not ((timezone >= -12) and (timezone <= 14)):
             return 'Error: Invalid time zone.'
-        
+
         #Load timezone information into 'data'
         f = open(self.dpl,'rb')
         data = pickle.load(f)
         f.close()
+        name = name.replace('[', '\[')
+        name = name.replace(']', '\]')
+        name = name.replace('^', '\^')
+        name = name.replace('\\', "\\")
         checktext = '^' + name + '$'
         check = re.compile(checktext, re.IGNORECASE)
 
@@ -59,6 +69,9 @@ class TimeZoneCheck():
         return 'Timezone set to '+str(timezone)+', remember to update this when DST starts/ends!'
 
     def read_time(self, name):
+        """
+        Based on user input, checks the time of a user if their timezone is set.
+        """
         #Preventing spaces from being included in the 'name'
         name = name.replace(' ','')
 
@@ -72,6 +85,7 @@ class TimeZoneCheck():
             return 'Error: Please enter a user\'s name.'
         if not re.match("^[A-Za-z0-9_\\\[\]{}^`|-]*$", name):
             return 'Error: Improper character(s) input.'
+        # Fix all characters that might break regex.
         name = name.replace('[', '\[')
         name = name.replace(']', '\]')
         name = name.replace('^', '\^')
@@ -113,6 +127,14 @@ class TimeZoneCheck():
     #This function is used by logger.py that gives the raw timezone number
     #for log-reading
     def get_raw_timezone(self,dpl,name):
+        """
+        Returns the timezone of a user for use in the log
+        """
+        # Fix all characters that might break regex.
+        name = name.replace('[', '\[')
+        name = name.replace(']', '\]')
+        name = name.replace('^', '\^')
+        name = name.replace('\\', "\\")
         self.dpl = dpl
         f = open(self.dpl,'rb')
         data = pickle.load(f)
