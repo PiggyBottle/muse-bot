@@ -90,7 +90,7 @@ class AnimeTiming():
             f = open(self.dpl,'rb')
             data = pickle.load(f)
             f.close()
-            if self.compare_dicts(anime_showtimes, data['anime_showtime']):
+            if self.compare_contents(anime_showtimes, data['anime_showtime']):
                 self.last_checked_HS = int(time.time())
                 return
             data['anime_showtime'] = anime_showtimes
@@ -128,7 +128,7 @@ class AnimeTiming():
                 print(str(e))
         return anime_showtimes
 
-    def compare_dicts(self, new, old):
+    def compare_contents(self, new, old):
         if len(new.keys()) != len(old.keys()):
             return False
         else:

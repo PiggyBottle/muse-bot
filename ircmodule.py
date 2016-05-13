@@ -95,72 +95,72 @@ class IRC(threading.Thread):
                         formatted_text = self.formatter(text)
                         if not formatted_text['type'] == None:
                             self.inputs.put(formatted_text)
-    def send(self, dict):
-        if dict is None:
+    def send(self, content):
+        if content is None:
             return
-        if not dict['private_messaged']:
-            text = str(dict['type'] + ' ' + dict['channel'] + ' :' + dict['message'] + '\r\n')
-        elif dict['private_messaged']:
-            text = str(dict['type'] + ' ' + dict['name'] + ' :' + dict['message'] + '\r\n')
+        if not content['private_messaged']:
+            text = str(content['type'] + ' ' + dict['channel'] + ' :' + dict['message'] + '\r\n')
+        elif content['private_messaged']:
+            text = str(content['type'] + ' ' + dict['name'] + ' :' + dict['message'] + '\r\n')
         self.irc.send(text.encode())
     def formatter(self,rawtext):
         text = rawtext.split(':', 2)
-        dict = {}
+        content = {}
         try:    #to circumvent the problem of system messages that do not have enough ':'s
-            dict['name'] = text[1].split('!')[0]
-            dict['message'] = text[2]
+            content['name'] = text[1].split('!')[0]
+            content['message'] = text[2]
         except:
             pass
-        dict['private_messaged'] = False
+        content['private_messaged'] = False
         if 'PRIVMSG' in text[1]:
-            dict['type'] = 'PRIVMSG'
-            dict['channel'] = text[1].split('PRIVMSG ',1)[1].split(' ',1)[0]
-            if not dict['channel'].startswith('#'):
-                dict['private_messaged'] = True
+            content['type'] = 'PRIVMSG'
+            content['channel'] = text[1].split('PRIVMSG ',1)[1].split(' ',1)[0]
+            if not content['channel'].startswith('#'):
+                content['private_messaged'] = True
         elif 'JOIN' in text[1]:
-            dict['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
-            dict['channel'] = text[2]
-            dict['message'] = ''
+            content['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from dict['message']
+            content['channel'] = text[2]
+            content['message'] = ''
         elif 'QUIT' in text[1]:
             #:SoraSky!~sora@always.online-never.available QUIT :Quit: leaving
-            dict['type'] = 'QUIT'
-            dict['message'] = ''
-            dict['channel'] = self.channel
+            content['type'] = 'QUIT'
+            content['message'] = ''
+            content['channel'] = self.channel
         elif 'PART' in text[1]:
-            dict['type'] = 'PART'
-            dict['channel'] = text[1].split('PART ')[1].split(' ')[0]
-            dict['name'] = text[1].split('!')[0]
-            dict['message'] = ''
+            content['type'] = 'PART'
+            content['channel'] = text[1].split('PART ')[1].split(' ')[0]
+            content['name'] = text[1].split('!')[0]
+            content['message'] = ''
         elif 'NICK' in text[1]:
-            dict['type'] = 'NICK'   #old name is dict['name'], new name is dict['message']
-            dict['channel'] = None
+            content['type'] = 'NICK'   #old name is dict['name'], new name is dict['message']
+            content['channel'] = None
         elif 'KICK' in text[1]:
-            #dict['name'] is the guy who was kicked, and the kicker is in the message
-            dict['type'] = 'KICK'
-            dict['message'] = 'was kicked by %s' %(dict['name'])
-            dict['channel'] = text[1].split('KICK ')[1].split(' ')[0]
-            dict['name'] = text[1].split('KICK ')[1].split(' ')[1]
-            if dict['name'] == self.botnick:
+            #content['name'] is the guy who was kicked, and the kicker is in the message
+            content['type'] = 'KICK'
+            content['message'] = 'was kicked by %s' %(dict['name'])
+            content['channel'] = text[1].split('KICK ')[1].split(' ')[0]
+            content['name'] = text[1].split('KICK ')[1].split(' ')[1]
+            if content['name'] == self.botnick:
                 #:SoraSky!~sora@always.online-never.available KICK #nanodesu kick_me_pls :test
-                text = 'JOIN '+dict['channel']+'\n'
+                text = 'JOIN '+content['channel']+'\n'
                 self.irc.send(text.encode())
         elif 'MODE' in text[1]:     #temporary placeholder
-            dict['type'] = 'MODE'
-            dict['message'] = ''
-            dict['name'] = ''
-            dict['channel'] = None
+            content['type'] = 'MODE'
+            content['message'] = ''
+            content['name'] = ''
+            content['channel'] = None
         elif '353' in text[1]:
             #There are cases where incomplete messages come in and break the bot, so forcing a try-except function
             try:
                 if text[1].split()[1] == '353':
-                    dict['type'] = 'NAMELIST'
-                    dict['channel'] = text[1].split()[4]
-                    dict['message'] = text[2]
-                    dict['name'] = ''
+                    content['type'] = 'NAMELIST'
+                    content['channel'] = text[1].split()[4]
+                    content['message'] = text[2]
+                    content['name'] = ''
                     #private message was used to make sure it doesn't get logged
-                    dict['private_messaged'] = True
+                    content['private_messaged'] = True
             except:
                 pass
         else:
-            dict['channel'], dict['type'] = (None,None)
-        return dict
+            content['channel'], dict['type'] = (None,None)
+        return content

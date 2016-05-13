@@ -22,30 +22,30 @@ class Logger():
                 loaded = True
             except:
                 pass
-    def log(self, dict, namelist):
-        dict['time'] = datetime.datetime.utcnow()
+    def log(self, content, namelist):
+        content['time'] = datetime.datetime.utcnow()
         #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
-        if dict['type'] == 'QUIT':
+        if content['type'] == 'QUIT':
             #because the 'QUIT' action applies to multiple channels.
             for a in namelist.keys():
-                if dict['name'] in namelist[a]:
-                    self.data[a].append(dict)
+                if content['name'] in namelist[a]:
+                    self.data[a].append(content)
             f = open(self.lpl, 'wb')
             pickle.dump(self.data, f)
             f.close()
-        elif not dict['channel'] == None and not dict['private_messaged'] == True:
-            if not dict['channel'] in self.data.keys():
-                self.data[dict['channel']] = []
-            self.data[dict['channel']].append(dict)
+        elif not content['channel'] == None and not dict['private_messaged'] == True:
+            if not content['channel'] in self.data.keys():
+                self.data[content['channel']] = []
+            self.data[content['channel']].append(dict)
             f = open(self.lpl, 'wb')
             pickle.dump(self.data, f)
             f.close()
-    def read(self, dict):
+    def read(self, content):
         a = usertimes.TimeZoneCheck()
-        tz = a.get_raw_timezone(self.dpl,dict['name'].lower())
+        tz = a.get_raw_timezone(self.dpl,content['name'].lower())
         if tz == None:
-            dict['message'] = 'Set your timezone first! $settimezone <number>'
-            return dict
+            content['message'] = 'Set your timezone first! $settimezone <number>'
+            return content
         f = open(self.lpl, 'rb')
         data = pickle.load(f)
         f.close()
@@ -54,10 +54,10 @@ class Logger():
         log_month = None
         log_year = None
         channel_to_search = ''
-        if not dict['channel'] in data.keys():
+        if not content['channel'] in data.keys():
             channel_to_search = '#nanodesu'
         else:
-            channel_to_search = dict['channel']
+            channel_to_search = content['channel']
         for a in reversed(data[channel_to_search]):
             buffer = ''
             time_string,time_date,time_month,time_year = self.display_time(a['time'],tz)
@@ -68,12 +68,12 @@ class Logger():
                 buffer += '%s%s has joined the channel.\r\n' %(self.display_name(None), a['name'])
             elif a['type'] == 'PART':
                 buffer += '%s%s has parted from the channel.\r\n' %(self.display_name(None), a['name'])
-                if a['name'].lower() == dict['name'].lower():
+                if a['name'].lower() == content['name'].lower():
                     log = buffer + log
                     break
             elif a['type'] == 'QUIT':
                 buffer += '%s%s has left the channel.\r\n' %(self.display_name(None), a['name'])
-                if a['name'].lower() == dict['name'].lower():
+                if a['name'].lower() == content['name'].lower():
                     log = buffer + log
                     break
             elif a['type'] == 'NICK':
@@ -101,8 +101,8 @@ class Logger():
         except http.client.HTTPException as e:
             print(e)
         response = request.read().decode()
-        dict['message'] = json.loads(response)['paste']['raw']
-        return dict
+        content['message'] = json.loads(response)['paste']['raw']
+        return content
         '''
         f = open(self.logstxt, 'r')
         a = self.pastebin.paste('2333bedc76cd701be6a8526402393da6',f.read(),api_user_key=self.pastebin.generate_user_key('2333bedc76cd701be6a8526402393da6','SoraSky','123456'),paste_private = 'public')

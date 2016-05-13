@@ -9,7 +9,7 @@ class SpamGuard():
         self.blocklist = ['Trivia', 'Internets','Icara','Tokino', 'Quotes']
         self.readlog_time = 0
         self.commandlist = '$money $time $anime $blackjack $loan $pay $debt $log $help .trivia .strivia .quote !snowball !ne~ !love !seen .cc !hangman !5050 .rank .t !rr !pull !roulette'.split()
-        self.states = {}    #using a dict to make it easier to delete keys
+        self.states = {}    #using a content to make it easier to delete keys
 
     def manage_states(self, state):
         if state == 'blackjack' and not state in self.states.keys():
@@ -25,117 +25,117 @@ class SpamGuard():
         else:
             self.blocking = True
             
-    def check(self, dict, state):
+    def check(self, content, state):
         self.manage_states(state)
         ###start trivia###
-        if dict['type'] == 'PRIVMSG' and dict['name'] == 'Trivia' and dict['message'].startswith('Starting round'):
+        if content['type'] == 'PRIVMSG' and dict['name'] == 'Trivia' and dict['message'].startswith('Starting round'):
             ###interrupt trivia###
             if len(self.states.keys()) > 0:
-                dict['message'] = '.strivia\r\n%s %s :SpamGuard: Do not spam the chat!' %(dict['type'], dict['channel'])
+                content['message'] = '.strivia\r\n%s %s :SpamGuard: Do not spam the chat!' %(dict['type'], dict['channel'])
             else:
                 self.states['trivia'] = True
-                dict['message'] = 'SpamGuard: Trivia detected. All commands and logging are now blocked.'
-            return dict, 'block'
+                content['message'] = 'SpamGuard: Trivia detected. All commands and logging are now blocked.'
+            return content, 'block'
         ###interrupt blackjack###
-        elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('$blackjack') and not 'blackjack' in self.states.keys() and len(self.states.keys()) > 0:
-            dict['message'] = 'SpamGuard: Terminate all other functions before starting $blackjack.'
-            return dict, 'block'
-        elif dict['message'] == 'PRIVMSG' and dict['message'].startswith('$loan') and not 'loan' in self.states.keys() and len(self.states.keys()) > 0:
-            dict['message'] = 'SpamGuard: Terminate all other functions before requesting a $loan.'
-            return dict, 'block'
+        elif content['type'] == 'PRIVMSG' and dict['message'].startswith('$blackjack') and not 'blackjack' in self.states.keys() and len(self.states.keys()) > 0:
+            content['message'] = 'SpamGuard: Terminate all other functions before starting $blackjack.'
+            return content, 'block'
+        elif content['message'] == 'PRIVMSG' and dict['message'].startswith('$loan') and not 'loan' in self.states.keys() and len(self.states.keys()) > 0:
+            content['message'] = 'SpamGuard: Terminate all other functions before requesting a $loan.'
+            return content, 'block'
         ###interrupt hangman###
-        elif dict['type'] == 'PRIVMSG' and dict['message'].startswith('!hangman') and len(self.states.keys()) > 0 and not 'hangman' in self.states.keys():
-            dict['message'] = 'SpamGuard: Do not spam!\r\nKICK %s %s :' %(dict['channel'], dict['name'])
-            return dict, 'block'
+        elif content['type'] == 'PRIVMSG' and dict['message'].startswith('!hangman') and len(self.states.keys()) > 0 and not 'hangman' in self.states.keys():
+            content['message'] = 'SpamGuard: Do not spam!\r\nKICK %s %s :' %(dict['channel'], dict['name'])
+            return content, 'block'
         ###start hangman###
-        elif dict['type'] == 'PRIVMSG' and (dict['name'].lower() == 'tokino' or dict['name'].lower() == 'icara') and ' has began a game of hangman!' in dict['message']:
-            dict['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
+        elif content['type'] == 'PRIVMSG' and (dict['name'].lower() == 'tokino' or dict['name'].lower() == 'icara') and ' has began a game of hangman!' in dict['message']:
+            content['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
             self.states['hangman'] = True
-            return dict, 'block'
+            return content, 'block'
         ###end trivia###
-        elif 'trivia' in self.states.keys() and dict['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped'))):
+        elif 'trivia' in self.states.keys() and content['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped'))):
             if len(self.states.keys()) == 1:
-                dict['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
+                content['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
             del self.states['trivia']
-            return dict, 'block'
+            return content, 'block'
         ###end hangman###
-        elif 'hangman' in self.states.keys() and dict['type'] == 'PRIVMSG' and (dict['message'].startswith('FAILURE! ') or dict['message'].startswith('Correct! ')):
+        elif 'hangman' in self.states.keys() and content['type'] == 'PRIVMSG' and (dict['message'].startswith('FAILURE! ') or dict['message'].startswith('Correct! ')):
             if len(self.states.keys()) == 1:
-                dict['message'] = 'SpamGuard: Hangman has ended. Commands and logging are now enabled'
+                content['message'] = 'SpamGuard: Hangman has ended. Commands and logging are now enabled'
             del self.states['hangman']
-            return dict, 'block'
+            return content, 'block'
         ###instant blocks###
-        elif self.blocking == True or dict['name'] in self.blocklist:
-            return dict, 'block'
+        elif self.blocking == True or content['name'] in self.blocklist:
+            return content, 'block'
         elif self.blocking == False:
             ###restricted###
-            if dict['name'].lower() in self.restricted:
-                return dict, 'log'
+            if content['name'].lower() in self.restricted:
+                return content, 'log'
             ###throttle logs###
-            elif dict['message'].startswith('$log'):
+            elif content['message'].startswith('$log'):
                 if time.time() - self.readlog_time < 10:
-                    dict['message'] = 'SpamGuard: $log command blocked for 10 secs.'
-                    return dict, 'do not log'
+                    content['message'] = 'SpamGuard: $log command blocked for 10 secs.'
+                    return content, 'do not log'
                 else:
                     self.readlog_time = time.time()
-                    return dict, 'do not log'
+                    return content, 'do not log'
             else:
                 found = False
                 for a in self.commandlist:
-                    if dict['message'].startswith(a):
+                    if content['message'].startswith(a):
                         found = True
                         break
                 if found == True:
-                    return dict, 'do not log'
+                    return content, 'do not log'
                 elif 'blackjack' in self.states.keys():
-                    return dict, 'do not log'
+                    return content, 'do not log'
                 else:
-                    return dict, 'open'
+                    return content, 'open'
 
 '''
 ##################################################
-        if dict['type'] == 'PRIVMSG' and dict['name'] == 'Trivia' and dict['message'].startswith('Starting round'):
+        if content['type'] == 'PRIVMSG' and dict['name'] == 'Trivia' and dict['message'].startswith('Starting round'):
             self.blocking = True
             self.states['trivia'] = True
-            dict['message'] = 'SpamGuard: Trivia detected. All commands and logging are now blocked.'
-            return dict, 'block'
-        elif self.blocking == True and dict['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped')) or dict['message'].startswith('.strivia')):
-            dict['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
+            content['message'] = 'SpamGuard: Trivia detected. All commands and logging are now blocked.'
+            return content, 'block'
+        elif self.blocking == True and content['type'] == 'PRIVMSG' and ((dict['name'] == 'Trivia' and dict['message'].startswith('Round of ') or dict['message'].startswith('Trivia stopped')) or dict['message'].startswith('.strivia')):
+            content['message'] = 'SpamGuard: Trivia has ended. Commands and logging are now enabled.'
             self.blocking = False
             del self.states['trivia']
-            return dict, 'block'
-        elif dict['type'] == 'PRIVMSG' and (dict['name'].lower() == 'tokino' or dict['name'].lower() == 'icara') and ' has began a game of hangman!' in dict['message']:
-            dict['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
+            return content, 'block'
+        elif content['type'] == 'PRIVMSG' and (dict['name'].lower() == 'tokino' or dict['name'].lower() == 'icara') and ' has began a game of hangman!' in dict['message']:
+            content['message'] = 'SpamGuard: Hangman detected. All commands and logging are now blocked.'
             self.blocking = True
             self.states['hangman'] = True
-            return dict, 'block'
-        elif self.blocking == True and dict['type'] == 'PRIVMSG' and (dict['message'].startswith('FAILURE! ') or dict['message'].startswith('Correct! ')):
+            return content, 'block'
+        elif self.blocking == True and content['type'] == 'PRIVMSG' and (dict['message'].startswith('FAILURE! ') or dict['message'].startswith('Correct! ')):
             self.blocking = False
             del self.states['hangman']
-            dict['message'] = 'SpamGuard: Hangman has ended. Commands and logging are now enabled'
-            return dict, 'block'
+            content['message'] = 'SpamGuard: Hangman has ended. Commands and logging are now enabled'
+            return content, 'block'
 
-        elif self.blocking == False and dict['name'].lower() in self.restricted:
-            return dict, 'log'
-        elif self.blocking == False and dict['message'].startswith('$log'):
+        elif self.blocking == False and content['name'].lower() in self.restricted:
+            return content, 'log'
+        elif self.blocking == False and content['message'].startswith('$log'):
             if time.time() - self.readlog_time < 10:
-                dict['message'] = 'SpamGuard: $log command blocked for 10 secs.'
-                return dict, 'do not log'
+                content['message'] = 'SpamGuard: $log command blocked for 10 secs.'
+                return content, 'do not log'
             else:
                 self.readlog_time = time.time()
-                return dict, 'do not log'
-        elif self.blocking == True or dict['name'] in self.blocklist:
-            return dict, 'block'
+                return content, 'do not log'
+        elif self.blocking == True or content['name'] in self.blocklist:
+            return content, 'block'
         elif self.blocking == False:
             found = False
             for a in self.commandlist:
-                if dict['message'].startswith(a):
+                if content['message'].startswith(a):
                     found = True
                     break
             if found == True:
-                return dict, 'do not log'
+                return content, 'do not log'
             elif state == 'blackjack':
-                return dict, 'do not log'
+                return content, 'do not log'
             else:
-                return dict, 'open'
+                return content, 'open'
 '''
