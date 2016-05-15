@@ -141,7 +141,7 @@ class StateManager():
         elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
             content['message'] = '\x01ACTION looks at %s\x01' %(content['name'])
             return content
-        elif message.startswith ('$NDAemail '):
+        elif message.startswith ('$NDAemail ') and content['name'] == self.master:
             #Emails sent represent NanoDesu Translations. Don't misuse this.
             self.emailer.send([message.split()[1]],[],['viorama@gmail.com'],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
             content['message'] = 'Email sent!'
