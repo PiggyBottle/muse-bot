@@ -6,6 +6,7 @@ import json
 import urllib.request
 import urllib.parse
 import usertimes
+import pastee #This is the back up for paste.ee site when it's down
 
 
 class Logger():
@@ -91,6 +92,7 @@ class Logger():
                 log_year = time_year
             log = buffer + log
         log = '[----%s.%s.%d----|\r\n' %(log_date,log_month,log_year) + log
+        '''
         a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':log}
         json.dumps(a)
         url = 'https://paste.ee/api'
@@ -102,6 +104,10 @@ class Logger():
             print(e)
         response = request.read().decode()
         content['message'] = json.loads(response)['paste']['raw']
+        return content
+        '''
+        client = pastee.PasteClient()
+        content['message'] = str(client.paste(log.encode()))
         return content
         '''
         f = open(self.logstxt, 'r')
