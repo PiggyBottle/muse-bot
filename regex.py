@@ -18,10 +18,10 @@ def _validate(segments):
     If everything is fine, nothing happens. If there
     is an error, the SedError exception is raised.
     """
-        if len(segments) != 3:
-            raise SedError("Missing \'/\' in the body of pattern.")
-        elif re.match('[^ig]', segments[2]):
-            raise SedError("Unknown flag for regular expression.")
+    if len(segments) != 3:
+        raise SedError("Missing \'/\' in the body of pattern.")
+    elif re.match('[^ig]', segments[2]):
+        raise SedError("Unknown flag for regular expression.")
 
 def _parse_log(expression, loglist):
     """
@@ -52,7 +52,6 @@ class Regex():
 
     def __init__(self, log, channel):
         self.log = log[channel]
-
 
     def replace(self, content):
         """
