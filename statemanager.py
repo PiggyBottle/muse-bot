@@ -10,8 +10,7 @@ import helper
 import trackers
 import tell
 import emailer
-
-
+import regex
 
 class StateManager():
     def __init__(self, config, irc, dpl, lpl, tpl, annpl):
@@ -31,6 +30,8 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.emailer = emailer.Emailer(config)
+        self.regex = regex.Regex(self.logger)
+
     def main(self, content):
 
         #Checking Spamguard permissions
@@ -145,4 +146,5 @@ class StateManager():
             self.emailer.send([message.split()[1]],[],['viorama@gmail.com'],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
             content['message'] = 'Email sent!'
             return content
-
+        elif message.startswith ('s/'):
+            return self.regex.replace(content)
