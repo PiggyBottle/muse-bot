@@ -50,8 +50,8 @@ class Regex():
     s/<Regex for text to be changed>/<Replacement text>/
     """
 
-    def __init__(self, log, channel):
-        self.log = log[channel]
+    def __init__(self, logger):
+        self.log = logger
 
     def replace(self, content):
         """
@@ -64,29 +64,28 @@ class Regex():
         The multiline flag is not included in this function
         because for this purpose it seems illogical.
         """
-        if content['message'].startswith('s/'):
-            text = re.sub('s/', '', text)
-            segments = text.split("/")
-            try:
-                _validate(segments)
-            except SedError:
-                content['message'] = "Your flag(s) and/or your use of slashes is incorrect."
+        text = re.sub('s/', '', text)
+        segments = text.split("/")
+        try:
+            _validate(segments)
+        except SedError:
+            content['message'] = "Your flag(s) and/or your use of slashes is incorrect."
+            return content
+        try:
+            if 'i' in segments[2]:
+                test = re.compile(segments[0], re.IGNORECASE)
+            else:
+                test = re.compile(segments[0])
+            matchconfirm, matcheddict = _parse_log(test, self.log.data(content['channel']))
+            if not matchconfirm:
+                content['message'] = "A recent match was not found."
                 return content
-            try:
-                if 'i' in segments[2]:
-                    test = re.compile(segments[0], re.IGNORECASE)
-                else:
-                    test = re.compile(segments[0])
-                matchconfirm, matcheddict = _parse_log(test, self.log)
-                if not matchconfirm:
-                    content['message'] = "A recent match was not found."
-                    return content
-                if 'g' in segments[2]:
-                    out, _ = test.subn(segments[1], matcheddict['message'])
-                else:
-                    out = test.sub(segments[1], matcheddict['message'])
-                content['message'] = out
-                return content
-            except re.error:
-                content['message'] = "The regular expression incurred an error."
-                return content
+            if 'g' in segments[2]:
+                out, _ = test.subn(segments[1], matcheddict['message'])
+            else:
+                out = test.sub(segments[1], matcheddict['message'])
+            content['message'] = "<" + matcheddict['name'] + "> " + out
+            return content
+        except re.error:
+            content['message'] = "The regular expression incurred an error."
+            return content
