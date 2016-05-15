@@ -25,8 +25,8 @@ class Twitter():
         f.close()
 
 
-        self.dict_template = {'type':'PRIVMSG','channel': self.irc.master,'message':'','private_messaged':False}
-        self.new_line_template = '\r\n%s %s :' %(self.dict_template['type'],self.dict_template['channel'])
+        self.content_template = {'type':'PRIVMSG','channel': self.irc.master,'message':'','private_messaged':False}
+        self.new_line_template = '\r\n%s %s :' %(self.content_template['type'],self.content_template['channel'])
 
 
     #Add 'master_online_status' into run().
@@ -60,9 +60,9 @@ class Twitter():
                 f = open(self.tpl, 'wb')
                 pickle.dump(self.data,f)
                 f.close()
-                dict = self.dict_template
-                dict['message'] = buffer
-                self.irc.send(dict)
+                content = self.content_template
+                content['message'] = buffer
+                self.irc.send(content)
                 print('sent')
         except:
             pass

@@ -8,10 +8,10 @@ class TimeZoneCheck():
     """
     def __init__(self):
         pass
-    def execute(self, dict, dpl):
-        self.dict = dict
-        self.word = self.dict['message']
-        self.name = self.dict['name']
+    def execute(self, content, dpl):
+        self.content = content
+        self.word = self.content['message']
+        self.name = self.content['name']
         self.dpl = dpl
 
         #Three types of commands get passed into this class.

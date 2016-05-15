@@ -12,8 +12,8 @@ def channels(reader):
     channames = reader.get('channels', 'names').split(",")
     chanpass = reader.get('channels', 'password').split(",")
     for name,password in zip(channames,chanpass):
-        dict = {'name':name,'password':password}
-        chanlist.append(dict)
+        content = {'name':name,'password':password}
+        chanlist.append(content)
     return chanlist
 
 def server(reader):

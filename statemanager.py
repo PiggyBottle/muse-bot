@@ -31,118 +31,118 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.emailer = emailer.Emailer(config)
-    def main(self, dict):
+    def main(self, content):
 
         #Checking Spamguard permissions
-        dict, permissions = self.spamguard.check(dict,self.state)
-        if 'SpamGuard: ' in dict['message']:
-            return dict
+        content, permissions = self.spamguard.check(content,self.state)
+        if 'SpamGuard: ' in content['message']:
+            return content
         if not permissions == 'block' and not permissions == 'do not log':
-            self.logger.log(dict,self.trackers.namelist)
+            self.logger.log(content,self.trackers.namelist)
         if not (permissions == 'open' or permissions == 'do not log'):
             return
 
         #Updating trackers namelist
-        if dict['type'] in ['NAMELIST', 'PART', 'KICK', 'QUIT', 'JOIN', 'NICK']:
-            self.trackers.update_namelist(dict)
+        if content['type'] in ['NAMELIST', 'PART', 'KICK', 'QUIT', 'JOIN', 'NICK']:
+            self.trackers.update_namelist(content)
 
-        message = dict['message']
+        message = content['message']
         '''
         if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
-            return self.tell.write(dict)
-        if dict['type'] == 'PRIVMSG':
-            tells, buffer = self.tell.check(dict)
+            return self.tell.write(content)
+        if content['type'] == 'PRIVMSG':
+            tells, buffer = self.tell.check(content)
             if tells:
                 return buffer
         '''
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming(self.dpl)
-            dict['message'] = a.execute(message[7:])
-            return dict
+            content['message'] = a.execute(message[7:])
+            return content
         elif self.commands['time'] == True and (message.startswith('$time') or message.startswith('$settimezone ')):
             a = usertimes.TimeZoneCheck()
-            dict['message'] = a.execute(dict, self.dpl)
-            return dict
-        elif self.commands['poll'] == True and dict['private_messaged'] == False and message.startswith('$poll ') and len(message) > 6 and self.state != 'poll':
+            content['message'] = a.execute(content, self.dpl)
+            return content
+        elif self.commands['poll'] == True and content['private_messaged'] == False and message.startswith('$poll ') and len(message) > 6 and self.state != 'poll':
             self.state = 'poll'
             self.function = poll.Poll(self.irc)
-            dict['message'] = self.function.execute(dict)
+            content['message'] = self.function.execute(content)
             #plus start thread over here
-            t = threading.Timer(15,self.function.complete, [dict, self])
+            t = threading.Timer(15,self.function.complete, [content, self])
             t.start()
-            return dict
+            return content
         elif self.state == 'poll':
-            return self.function.execute(dict)
+            return self.function.execute(content)
         elif self.commands['money'] == True and message.startswith('$money'):
             a = money.Money(self.dpl)
-            return a.report(dict)
+            return a.report(content)
         elif self.commands['blackjack'] == True and message.startswith('$blackjack') and self.state != 'blackjack':
             a = money.Money(self.dpl)
             #To make sure a person who is broke cannot start a game of blackjack
-            if a.check(dict['name']) == 0:
-                dict['message'] = 'Error, player has no money!'
-                return dict
+            if a.check(content['name']) == 0:
+                content['message'] = 'Error, player has no money!'
+                return content
             self.state = 'blackjack'
             self.commands['poll'],self.commands['loan'] = False,False
-            self.function = blackjack.Game(dict, self.dpl)
-            return self.function.execute(dict)
+            self.function = blackjack.Game(content, self.dpl)
+            return self.function.execute(content)
         elif self.state == 'blackjack':
-            if (message.startswith('$quit') and dict['name'].lower() in self.function.lower_keys()) or len(self.function.lower_keys()) < 1:
+            if (message.startswith('$quit') and content['name'].lower() in self.function.lower_keys()) or len(self.function.lower_keys()) < 1:
                 self.function = None
                 self.commands['poll'],self.commands['loan'] = True,True
                 self.state = 'main'
-                dict['message'] = 'Game closed.'
-                return dict
-            elif dict['type'] == 'NICK' and dict['name'].lower() in self.function.lower_keys():
+                content['message'] = 'Game closed.'
+                return content
+            elif content['type'] == 'NICK' and content['name'].lower() in self.function.lower_keys():
                 self.commands['poll'],self.commands['loan'] = True,True
                 self.state = 'main'
-                dict['message'] = 'A nick change has been detected. Game closing.'
-                dict['type'] = 'PRIVMSG'
-                dict['channel'] = self.function.channel
+                content['message'] = 'A nick change has been detected. Game closing.'
+                content['type'] = 'PRIVMSG'
+                content['channel'] = self.function.channel
                 self.function = None
-                return dict
-            return self.function.execute(dict)
+                return content
+            return self.function.execute(content)
         elif self.commands['loan'] == True and not self.state == 'loan' and message.startswith('$loan'):
             self.function = money.Money(self.dpl)
-            dict,move_on = self.function.loan(dict)
+            content,move_on = self.function.loan(content)
             if move_on == False:
                 self.function = None
             elif move_on == True:
                 self.state = 'loan'
                 self.commands['blackjack'],self.commands['loan'] = False,False
-            return dict
+            return content
         elif self.state == 'loan':
-            dict,finish = self.function.loan(dict)
+            content,finish = self.function.loan(content)
             if finish:
                 self.function = None
                 self.commands['blackjack'],self.commands['loan'] = True,True
                 self.state = 'main'
-            return dict
+            return content
         elif message.startswith('$debt'):
             a = money.Money(self.dpl)
-            debt = a.check_debt(dict['name'])
+            debt = a.check_debt(content['name'])
             if debt == 0:
-                dict['message'] = 'You have no $debt!'
+                content['message'] = 'You have no $debt!'
             else:
-                dict['message'] = 'You have %d NanoDollars of debt.' %(debt)
-            return dict
+                content['message'] = 'You have %d NanoDollars of debt.' %(debt)
+            return content
         elif message.startswith('$pay') and self.state == 'main':
             #forcing state to be 'main' to prevent people from paying money in the middle of a blackjack game
             a = money.Money(self.dpl)
-            return a.pay_debt(dict)
+            return a.pay_debt(content)
         elif message.startswith('$help') and self.state == 'main':
             a = helper.Helper()
-            dict = a.execute(dict)
-            return dict
+            content = a.execute(content)
+            return content
         elif message.startswith('$log'):
-            dict = self.logger.read(dict)
-            return dict
+            content = self.logger.read(content)
+            return content
         elif message.startswith('\x01ACTION looks at %s' %(self.irc.botnick)):
-            dict['message'] = '\x01ACTION looks at %s\x01' %(dict['name'])
-            return dict
+            content['message'] = '\x01ACTION looks at %s\x01' %(content['name'])
+            return content
         elif message.startswith ('$NDAemail '):
             #Emails sent represent NanoDesu Translations. Don't misuse this.
             self.emailer.send([message.split()[1]],[],['viorama@gmail.com'],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
-            dict['message'] = 'Email sent!'
-            return dict
+            content['message'] = 'Email sent!'
+            return content
 

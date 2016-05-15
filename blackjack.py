@@ -2,8 +2,8 @@ import random
 import money
 
 class Game():
-    def __init__(self, dict, dpl):
-        self.channel = dict['channel']  #to make sure commands from that channel are registered.
+    def __init__(self, content, dpl):
+        self.channel = content['channel']  #to make sure commands from that channel are registered.
         self.state = 'just_started'
         self.dpl = dpl
         self.players = {}
@@ -11,7 +11,7 @@ class Game():
         self.turnorder = []
         self.endgame_processing_order = []  #This list remains untouched until endgame when scores are tabulated
         self.bets_remaining = []
-        self.add_player(dict)   #Adds the person who initiated the game
+        self.add_player(content)   #Adds the person who initiated the game
     def lower_keys(self):   #generates a list of player names in .lower()
         keys = []
         for a in self.players.keys():
@@ -32,25 +32,25 @@ class Game():
         for a in self.turnorder:
             bets.append(a)
         return bets
-    def set_bet(self, dict): #Used during the betting phase
+    def set_bet(self, content): #Used during the betting phase
         try:
-            bet = int(dict['message'])
+            bet = int(content['message'])
         except:
             return
-        if bet > self.players[dict['name']].money:
-            dict['message'] = 'You don\'t have enough money!'
-            return dict
+        if bet > self.players[content['name']].money:
+            content['message'] = 'You don\'t have enough money!'
+            return content
         elif bet < 1:
-            dict['message'] = 'Error: Invalid number.'
-            return dict
+            content['message'] = 'Error: Invalid number.'
+            return content
         else:
-            self.players[dict['name']].bet = bet
-            self.players[dict['name']].money -= bet
-            del self.bets_remaining[self.bets_remaining.index(dict['name'])]
+            self.players[content['name']].bet = bet
+            self.players[content['name']].money -= bet
+            del self.bets_remaining[self.bets_remaining.index(content['name'])]
             if len(self.bets_remaining) < 1:
                 self.state = 'main'
-                dict['message'] = self.start_game(dict)
-                return dict
+                content['message'] = self.start_game(content)
+                return content
     def deal_cards(self):   #For use at start of game
         for a in self.players.keys():
             list = []
@@ -61,7 +61,7 @@ class Game():
         list.append(self.deck.pop())
         list.append(self.deck.pop())
         self.dealer.hand.append(list)
-    def start_game(self, dict):
+    def start_game(self, content):
         if len(self.lower_keys()) <= 4:
             self.deck = self.generate_deck(1)
         elif len(self.lower_keys()) in range(5,9):
@@ -71,94 +71,94 @@ class Game():
         self.deal_cards()
         buffer = ''
         for a in self.turnorder:
-            buffer += self.players[a].name + ' (%d): ' %(self.players[a].active_hand_value()) + self.players[a].print_hand() + '\r\n%s %s :' %(dict['type'], dict['channel'])
-        buffer += self.dealer.name + ': ' + self.dealer.peek() + '\r\n%s %s :$hit, $doubledown, $split, $stand or $quit.' %(dict['type'], dict['channel'])
+            buffer += self.players[a].name + ' (%d): ' %(self.players[a].active_hand_value()) + self.players[a].print_hand() + '\r\n%s %s :' %(content['type'], content['channel'])
+        buffer += self.dealer.name + ': ' + self.dealer.peek() + '\r\n%s %s :$hit, $doubledown, $split, $stand or $quit.' %(content['type'], content['channel'])
         return buffer
-    def add_player(self, dict):
+    def add_player(self, content):
         a = money.Money(self.dpl)
         #Be careful, the name is NOT in .lower()!
-        name = dict['name']
+        name = content['name']
         amount = a.check(name)
         #A person who is broke cannot join
         if amount < 1:
-            dict['message'] = 'Error, player has no money!'
-            return dict
+            content['message'] = 'Error, player has no money!'
+            return content
         #A person who has already joined cannot join again.
         elif not name.lower() in self.lower_keys():
             self.players[name] = Player(name, amount)
             self.turnorder.append(name)
             self.endgame_processing_order.append(name)
-    def remove_player(self, dict):
-        del self.players[dict['name']]
-        while dict['name'] in self.turnorder:   #to account for splits
-            del self.turnorder[self.turnorder.index(dict['name'])]
-        del self.endgame_processing_order[self.endgame_processing_order.index(dict['name'])]
-        dict['type'] = 'PRIVMSG'
-        dict['channel'] = self.channel
-        dict['message'] = 'A player left the channel and was removed from the game.'
+    def remove_player(self, content):
+        del self.players[content['name']]
+        while content['name'] in self.turnorder:   #to account for splits
+            del self.turnorder[self.turnorder.index(content['name'])]
+        del self.endgame_processing_order[self.endgame_processing_order.index(content['name'])]
+        content['type'] = 'PRIVMSG'
+        content['channel'] = self.channel
+        content['message'] = 'A player left the channel and was removed from the game.'
         if len(self.turnorder) == 0 and len(self.endgame_processing_order) != 0:
-            dict['message'] += '\r\n'
-            return self.end_game(dict)
-        return dict
+            content['message'] += '\r\n'
+            return self.end_game(content)
+        return content
     def dealer_draw(self):
         while self.dealer.active_hand_value() < 17:
             self.dealer.hand[0].append(self.deck.pop())
         if self.dealer.active_hand_value() > 21:
             self.dealer.bust = True
-    def hit(self, dict):
-        if dict['message'].startswith('$doubledown'):
+    def hit(self, content):
+        if content['message'].startswith('$doubledown'):
             must_stand = True
         else:
             must_stand = False
-        name = dict['name']
+        name = content['name']
         player = self.players[name]
         player.hand[player.active_hand_number - 1].append(self.deck.pop())
         hand_value = player.active_hand_value()
         buffer = '%s (%d): %s' %(name, hand_value, player.print_hand())
         if hand_value > 21:
-            buffer += '\r\n%s %s :Busted!\r\n%s %s :' %(dict['type'], dict['channel'], dict['type'], dict['channel'])
-            dict['message'] = buffer
-            return self.stand(dict)
+            buffer += '\r\n%s %s :Busted!\r\n%s %s :' %(content['type'], content['channel'], content['type'], content['channel'])
+            content['message'] = buffer
+            return self.stand(content)
         elif must_stand:
-            buffer += '\r\n%s %s :' %(dict['type'], dict['channel'])
-            dict['message'] = buffer
-            return self.stand(dict)
+            buffer += '\r\n%s %s :' %(content['type'], content['channel'])
+            content['message'] = buffer
+            return self.stand(content)
         else:
-            dict['message'] = buffer
-            return dict
-    def doubledown(self, dict):
-        name = dict['name']
+            content['message'] = buffer
+            return content
+    def doubledown(self, content):
+        name = content['name']
         player = self.players[name]
         if player.active_hand_number == 1:
             bet = player.bet
         elif player.active_hand_number == 2:
             bet = player.bet2
         if player.money < bet:
-            dict['message'] = 'You don\'t have enough money!'
-            return dict
+            content['message'] = 'You don\'t have enough money!'
+            return content
         else:
             player.money -= bet
             if player.active_hand_number == 1:
                 player.bet = player.bet * 2
             elif player.active_hand_number == 2:
                 player.bet2 = player.bet2 * 2
-            return self.hit(dict)
-    def split(self, dict):
-        name = dict['name']
+            return self.hit(content)
+    def split(self, content):
+        name = content['name']
         player = self.players[name]
         tens = ['1', 'J', 'Q', 'K']
         if player.splitted:
-            dict['message'] = 'Error: You can only split once!'
-            return dict
+            content['message'] = 'Error: You can only split once!'
+            return content
         elif player.money < player.bet:
-            dict['message'] = 'You don\'t have enough money!'
-            return dict
+            content['message'] = 'You don\'t have enough money!'
+            return content
         elif not len(player.hand[0]) == 2:
-            dict['message'] = 'Error: You can only split on your first turn!'
-            return dict
+            content['message'] = 'Error: You can only split on your first turn!'
+            return content
         elif (not player.hand[0][0][0] == player.hand[0][1][0]) and not (player.hand[0][0][0] in tens and player.hand[0][1][0] in tens):
-            dict['message'] = 'Error: You can only split when both card values are the same!'
-            return dict
+            content['message'] = 'Error: You can only split when both card values are the same!'
+            return content
         else:
             bet = player.bet
             player.splitted = True
@@ -171,17 +171,17 @@ class Game():
             buffer = ''
             for i,a in enumerate(player.hand):
                 player.hand[i].append(self.deck.pop())
-                buffer += '%s (%d): %s\r\n%s %s :' %(name, player.active_hand_value(), player.print_hand(), dict['type'], dict['channel'])
+                buffer += '%s (%d): %s\r\n%s %s :' %(name, player.active_hand_value(), player.print_hand(), content['type'], content['channel'])
                 if i == 0:
                     player.active_hand_number = 2
                 else:
                     player.active_hand_number = 1
             buffer += 'Hand has been split. $hit, $doubledown or $stand.'
-            dict['message'] = buffer
-            return dict
-    def stand(self, dict):
-        if not dict['message'].startswith('$stand'):    #suggests that this method was called by a $hit or $doubledown
-            buffer = dict['message']
+            content['message'] = buffer
+            return content
+    def stand(self, content):
+        if not content['message'].startswith('$stand'):    #suggests that this method was called by a $hit or $doubledown
+            buffer = content['message']
         else:
             buffer = ''
         if self.players[self.turnorder[0]].splitted: #To switch splitted player's hand
@@ -195,15 +195,15 @@ class Game():
             name = self.turnorder[0]
             player = self.players[name]
             hand_value = player.active_hand_value()
-            buffer += '%s\'s turn!\r\n%s %s :%s (%d): %s' %(name, dict['type'], dict['channel'], name, hand_value, player.print_hand())
-            dict['message'] = buffer
-            return dict
+            buffer += '%s\'s turn!\r\n%s %s :%s (%d): %s' %(name, content['type'], content['channel'], name, hand_value, player.print_hand())
+            content['message'] = buffer
+            return content
         else:   #Remember to insert 'endgame' function.
-            dict['message'] = buffer
-            return self.end_game(dict)
-    def end_game(self, dict):
-        nextline = '\r\n%s %s :' %(dict['type'], dict['channel'])
-        buffer = dict['message']
+            content['message'] = buffer
+            return self.end_game(content)
+    def end_game(self, content):
+        nextline = '\r\n%s %s :' %(content['type'], content['channel'])
+        buffer = content['message']
         self.dealer_draw()
         buffer += 'All players have played!' + nextline
         for a in self.endgame_processing_order:
@@ -231,8 +231,8 @@ class Game():
                 self.turnorder.append(b)
                 self.endgame_processing_order.append(b)
         buffer += 'Players who are broke have been kicked. Press $join, $start or $quit.'
-        dict['message'] = buffer
-        return dict
+        content['message'] = buffer
+        return content
     def process_score(self, player):
         if player.splitted:
             list = range(2)
@@ -276,44 +276,44 @@ class Game():
                 player.active_hand_number = 2
             elif len(list) > 1 and player.active_hand_number == 2:
                 player.active_hand_number = 1
-    def execute(self, dict):
-        if (dict['type'] == 'QUIT' or (dict['type'] == 'PART' and dict['channel'] == self.channel)) and dict['name'].lower() in self.lower_keys():
-            return self.remove_player(dict)
+    def execute(self, content):
+        if (content['type'] == 'QUIT' or (content['type'] == 'PART' and content['channel'] == self.channel)) and content['name'].lower() in self.lower_keys():
+            return self.remove_player(content)
         #Making sure only messages sent from the initiating channel are registered
-        if not dict['channel'] == self.channel:
+        if not content['channel'] == self.channel:
             return
-        name = dict['name']
-        command = dict['message']
+        name = content['name']
+        command = content['message']
         if self.state == 'just_started':
             self.state = 'join_phase'
-            dict['message'] = '%s has started a game of blackjack! Feel free to $join! Once ready, press $start.' %(name)
-            return dict
+            content['message'] = '%s has started a game of blackjack! Feel free to $join! Once ready, press $start.' %(name)
+            return content
         elif self.state == 'join_phase' and command.startswith('$join'):
-            return self.add_player(dict)
+            return self.add_player(content)
         #From here on, it only allows messages from in-game players.
         elif not name.lower() in self.lower_keys():
             return
         elif self.state == 'join_phase' and command.startswith('$start'):
             self.state = 'betting_phase'
             self.bets_remaining = self.generate_bets_remaining()
-            dict['message'] = 'Players: ' + str(self.turnorder).strip('][').replace("\'", "") + '\r\n%s %s :Input your bets in integer numbers' %(dict['type'], self.channel)
-            return dict
+            content['message'] = 'Players: ' + str(self.turnorder).strip('][').replace("\'", "") + '\r\n%s %s :Input your bets in integer numbers' %(content['type'], self.channel)
+            return content
         elif self.state == 'betting_phase' and name in self.bets_remaining:
-            return self.set_bet(dict)
+            return self.set_bet(content)
         elif self.state == 'endgame' and command.startswith('$continue'):
             pass    #under construction
         elif len(self.turnorder) < 1:
             return
         elif self.state == 'main' and name == self.turnorder[0]:
             if command.startswith('$hit'):
-                return self.hit(dict)
+                return self.hit(content)
             elif command.startswith('$stand'):
-                return self.stand(dict)
+                return self.stand(content)
             elif command.startswith('$doubledown'):
-                return self.doubledown(dict)
+                return self.doubledown(content)
             elif command.startswith('$split'):
-                return self.split(dict)
-        
+                return self.split(content)
+
 
 
 
