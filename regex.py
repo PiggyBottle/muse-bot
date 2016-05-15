@@ -20,7 +20,7 @@ def _validate(segments):
     """
     if len(segments) != 3:
         raise SedError("Missing \'/\' in the body of pattern.")
-    elif re.match('[^ig]', segments[2]):
+    elif re.findall('[^ig]', segments[2]):
         raise SedError("Unknown flag for regular expression.")
 
 def _parse_log(expression, loglist):
@@ -35,7 +35,7 @@ def _parse_log(expression, loglist):
     """
     for i in range(1,_loglim+1):
         match = loglist[-i]['message']
-        if expression.match(match):
+        if expression.findall(match):
             return True, loglist[-i]
     else:
         return False, None
@@ -67,6 +67,7 @@ class Regex():
         text = content['message']
         text = re.sub('s/', '', text)
         segments = text.split("/")
+        chanlog = self.log.data[content['channel']]
         try:
             _validate(segments)
         except SedError:
@@ -77,7 +78,7 @@ class Regex():
                 test = re.compile(segments[0], re.IGNORECASE)
             else:
                 test = re.compile(segments[0])
-            matchconfirm, matcheddict = _parse_log(test, self.log.data[content['channel']])
+            matchconfirm, matcheddict = _parse_log(test, chanlog)
             if not matchconfirm:
                 content['message'] = "A recent match was not found."
                 return content
