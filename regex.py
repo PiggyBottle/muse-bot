@@ -76,7 +76,7 @@ class Regex():
                 test = re.compile(segments[0], re.IGNORECASE)
             else:
                 test = re.compile(segments[0])
-            matchconfirm, matcheddict = _parse_log(test, self.log.data(content['channel']))
+            matchconfirm, matcheddict = _parse_log(test, self.log.data[content['channel']])
             if not matchconfirm:
                 content['message'] = "A recent match was not found."
                 return content
