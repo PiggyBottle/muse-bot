@@ -64,6 +64,7 @@ class Regex():
         The multiline flag is not included in this function
         because for this purpose it seems illogical.
         """
+        text = content['message']
         text = re.sub('s/', '', text)
         segments = text.split("/")
         try:
