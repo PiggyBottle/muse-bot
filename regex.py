@@ -42,10 +42,18 @@ def _parse_log(expression, loglist):
     Returns a boolean True and the match if found
     otherwise returns False and None.
     """
-    for i in range(1,_loglim+1):
-        match = loglist[-i]['message']
-        if expression.findall(match):
-            return True, loglist[-i]
+    i = 1
+    count = 0
+    while count < _loglim+1:
+        if loglist[-i]['type'] == 'PRIVMSG':
+            match = loglist[-i]['message']
+            if expression.findall(match):
+                return True, loglist[-i]
+            i += 1
+            count += 1
+        else:
+            i += 1
+            continue
     else:
         return False, None
 
@@ -70,7 +78,7 @@ def _sedsplit(text):
     indices = _positions(text, "/")
     lastind = 0
     for i in range(0, len(indices)):
-        if text[indices[i]-1] == "\\":
+        if text[indices[i]-1] == "\\" and text[indices[i]-2] != "\\":
             newstring += text[lastind:indices[i]-1] + "/"
         else:
             newstring += text[lastind:indices[i]]
