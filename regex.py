@@ -10,17 +10,26 @@ class SedError(Exception):
     """
     pass
 
-def _validate(segments):
+def _validate_slashes(segments):
     """
-    Determines whether the input violates any of the sed
-    conventions.
+    Determines whether the input uses the correct formatting
+    for replacement cases.
 
     If everything is fine, nothing happens. If there
     is an error, the SedError exception is raised.
     """
     if len(segments) != 3:
         raise SedError("Missing \'/\' in the body of pattern.")
-    elif re.findall('[^ig]', segments[2]):
+
+def _validate_flags(segments):
+    """
+    Determines whether the input uses valid
+    flags for regular expressions.
+
+    If everything is fine, nothing happens. If there
+    is an error, the SedError exception is raised.
+    """
+    if re.findall('[^ig]', segments[2]):
         raise SedError("Unknown flag for regular expression.")
 
 def _parse_log(expression, loglist):
@@ -39,6 +48,40 @@ def _parse_log(expression, loglist):
             return True, loglist[-i]
     else:
         return False, None
+
+def _positions(text, char):
+    """
+    A function to determine the indices in a string where
+    characters are located.
+
+    Returns a list of indices.
+    """
+    return [pos for pos, c in enumerate(text) if c == char]
+
+def _sedsplit(text):
+    """
+    A function rigged to only split sed strings at non-escaped slashes.
+
+    Returns a list of strings, separating `text` at the sed-style
+    / separators.
+    """
+    split = []
+    newstring = ""
+    indices = _positions(text, "/")
+    lastind = 0
+    for i in range(0, len(indices)):
+        if text[indices[i]-1] == "\\":
+            newstring += text[lastind:indices[i]-1] + "/"
+        else:
+            newstring += text[lastind:indices[i]]
+            split.append(newstring)
+            newstring = ""
+        lastind = indices[i] + 1
+    if text[lastind:]:
+        split.append(text[lastind:])
+    else:
+        split.append("")
+    return split
 
 class Regex():
     """
@@ -66,12 +109,17 @@ class Regex():
         """
         text = content['message']
         text = re.sub('s/', '', text)
-        segments = text.split("/")
+        segments = _sedsplit(text)
         chanlog = self.log.data[content['channel']]
         try:
-            _validate(segments)
+            _validate_slashes(segments)
         except SedError:
-            content['message'] = "Your flag(s) and/or your use of slashes is incorrect."
+            content['message'] = "Your use of slashes is incorrect."
+            return content
+        try:
+            _validate_flags(segments)
+        except SedError:
+            content['message'] = "\'" + segments[2] + "\' contains invalid flags."
             return content
         try:
             if 'i' in segments[2]:
@@ -85,7 +133,7 @@ class Regex():
             if 'g' in segments[2]:
                 out, _ = test.subn(segments[1], matcheddict['message'])
             else:
-                out = test.sub(segments[1], matcheddict['message'])
+                out, _ = test.subn(segments[1], matcheddict['message'], count=1)
             content['message'] = "<" + matcheddict['name'] + "> " + out
             return content
         except re.error:
