@@ -1,6 +1,6 @@
 class Helper():
     def __init__(self):
-        self.list = 'poll, anime, [time, settimezone], blackjack, [money, loan, debt, pay], log'
+        self.list = 'poll, anime, [time, settimezone], blackjack, [money, loan, debt, pay], log, s/'
     def execute(self, content):
         if len(content['message']) <= 6:
             if content['private_messaged'] == False:
@@ -30,6 +30,9 @@ class Helper():
                 content['message'] = '$pay <number> pays off <number> from your debt. Note that you do not need to repay your debt in full.'
             elif option.startswith('log'):
                 content['message'] = '$log generates a log of messages you\'ve missed since you last left the channel. Requires a time zone to be set.'
+            elif option.startswith('s/'):
+                content['message'] = 's/ is a regular expression substitution function. The syntax for use is `s/<Expression to be replaced>/<Replacement string>/<Modifier Flag>`. ' + \
+                                     'The flags available are i (case insensitivity) and g (global). For futher understanding of regular expressions, I recommend http://regex.com .'
             else:
                 content['message'] = 'Type $help <command> for details.\r\n%s %s :%s.' %(content['type'],content['channel'],self.list)
             return content
