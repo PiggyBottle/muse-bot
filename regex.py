@@ -196,7 +196,7 @@ class Regex():
         else:
             blocked = _blockquant(segments)
             if blocked:
-                content['message'] == "Quantifying has been blocked in regular expressions."
+                content['message'] = "Quantifying has been blocked in regular expressions."
                 return content
         try:
             if 'i' in segments[2]:
