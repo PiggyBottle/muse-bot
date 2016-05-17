@@ -13,13 +13,14 @@ dpl = 'data.pickle'
 lpl = 'logs.pickle'
 tpl = 'twitter.pickle'
 annpl = 'ann.pickle'
+ndapl = 'nda.pickle'
 
 config = setup.main()
 
 
 irc = ircmodule.IRC(config)
 irc.start()
-sm = statemanager.StateManager(config,irc,dpl,lpl,tpl,annpl)    #putting irc object in to support the use of the irc.send() function in threads
+sm = statemanager.StateManager(config,irc,dpl,lpl,tpl,annpl,ndapl)    #putting irc object in to support the use of the irc.send() function in threads
 while True:
     content = irc.inputs.get()
     irc.send(sm.main(content))
