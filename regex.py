@@ -89,7 +89,7 @@ def _validate_quant(segments):
                 if start < finish:
                     try:
                         for quants in expression[start+1:finish].split(","):
-                            int(quants)
+                            quants = int(quants)
                             if quants > _matchlim:
                                 raise QuantityError
                     except ValueError:
