@@ -19,20 +19,21 @@ How to install:
 Installing Muse
 ===============
 
-To install muse-bot, you need to clone this repo. For your convenience, the command is
+To install ``muse-bot``, you need to clone this repo. For your convenience, the command is
 
 ::
+
     git clone https://github.com/SoraSkyy/muse-bot
 
 
 Configuration:
 --------------
 
-In the file `setup.cfg`, the channels the bot enters (+ optional passwords), the name of the bot (again, + optional passwords), email address + password, and the nickname of the bot's "master" are configured.
+In the file ``setup.cfg``, the channels the bot enters (+ optional passwords), the name of the bot (again, + optional passwords), email address + password, and the nickname of the bot's "master" are configured.
 
 Running Muse
 ============
 
-Currently, the bot is run through the command `sudo python3 bot.py`.
+Currently, the bot is run through the command ``sudo python3 bot.py``.
 
 .. _Oauth2: https://github.com/joestump/python-oauth2
