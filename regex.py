@@ -3,10 +3,18 @@ import re, string
 # Constants
 
 _loglim = 50
+_matchlim = 10
 
 class SedError(Exception):
     """
     Raised when the format for substituion is incorrect
+    """
+    pass
+
+class QuantityError(Exception):
+    """
+    Raised when the quantity of matches in an expression
+    exceeds the limit _matchlim.
     """
     pass
 
@@ -65,6 +73,27 @@ def _positions(text, char):
     Returns a list of indices.
     """
     return [pos for pos, c in enumerate(text) if c == char]
+
+def _validate_quant(segments):
+    """
+    Determines whether the number of matches in a {n, ...}
+    term of a regular expression is within limitations.
+    """
+
+    expression = segments[0]
+    if '{' in expression and '}' in expression:
+        openind = _positions(expression, '{')
+        closeind = _positions(expression, '}')
+        for start in openind:
+            for finish in closeind:
+                if start < finish:
+                    try:
+                        for quants in expression[start+1:finish].split(","):
+                            int(quants)
+                            if quants > _matchlim:
+                                raise QuantityError
+                    except ValueError:
+                        pass
 
 def _sedsplit(text):
     """
@@ -128,6 +157,11 @@ class Regex():
             _validate_flags(segments)
         except SedError:
             content['message'] = "\'" + segments[2] + "\' contains invalid flags."
+            return content
+        try:
+            _validate_quant(segments)
+        except QuantityError:
+            content['message'] = "Attempted to match too large a quantity."
             return content
         try:
             if 'i' in segments[2]:

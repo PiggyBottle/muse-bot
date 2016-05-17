@@ -2,7 +2,7 @@
 muse-bot
 ********
 
-Hexchat IRC bot for Muse-chan
+Python IRC bot
 
 Dependencies:
 =============
