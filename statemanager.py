@@ -11,9 +11,10 @@ import trackers
 import tell
 import emailer
 import regex
+import ndacademy
 
 class StateManager():
-    def __init__(self, config, irc, dpl, lpl, tpl, annpl):
+    def __init__(self, config, irc, dpl, lpl, tpl, annpl, ndapl):
         self.config = config
         self.irc = irc
         self.state = 'main'
@@ -24,12 +25,13 @@ class StateManager():
         self.tpl = tpl
         self.annpl = annpl
         self.master = config['master']
+        self.emailer = emailer.Emailer(config)
+        self.nda = ndacademy.NDAcademy(self.emailer,ndapl)
         self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl))
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
-        self.emailer = emailer.Emailer(config)
         self.regex = regex.Regex(self.logger)
 
     def main(self, content):
