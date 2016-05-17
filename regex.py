@@ -116,7 +116,7 @@ class Regex():
         because for this purpose it seems illogical.
         """
         text = content['message']
-        text = re.sub('s/', '', text)
+        text, _ = re.subn('s/', '', text, count=1)
         segments = _sedsplit(text)
         chanlog = self.log.data[content['channel']]
         try:
