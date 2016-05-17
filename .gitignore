@@ -2,4 +2,4 @@
 setup.cfg
 *.pyc
 *.swp
-*.py~
+*~
