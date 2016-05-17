@@ -4,6 +4,7 @@ import re, string
 
 _loglim = 50
 _matchlim = 10
+_regquant = False
 
 class SedError(Exception):
     """
@@ -78,6 +79,9 @@ def _validate_quant(segments):
     """
     Determines whether the number of matches in a {n, ...}
     term of a regular expression is within limitations.
+
+    Raises QuantityError if the number of matches exceeds
+    the limit.
     """
 
     expression = segments[0]
@@ -94,6 +98,31 @@ def _validate_quant(segments):
                                 raise QuantityError
                     except ValueError:
                         pass
+
+def _blockquant(segments):
+    """
+    Determines whether a quantifier is used in an expression.
+
+    Returns a boolean True if there is a quantifier.
+    """
+
+    expression = segments[0]
+    if '{' in expression and '}' in expression:
+        openind = _positions(expression, '{')
+        closeind = _positions(expression, '}')
+        for start in openind:
+            for finish in closeind:
+                if start < finish:
+                    try:
+                        for quants in expression[start+1:finish].split(","):
+                            quants = int(quants)
+                            return True
+                    except ValueError:
+                        pass
+        else:
+            return False
+    else:
+        return False
 
 def _sedsplit(text):
     """
@@ -158,11 +187,17 @@ class Regex():
         except SedError:
             content['message'] = "\'" + segments[2] + "\' contains invalid flags."
             return content
-        try:
-            _validate_quant(segments)
-        except QuantityError:
-            content['message'] = "Attempted to match too large a quantity."
-            return content
+        if _regquant:
+            try:
+                _validate_quant(segments)
+            except QuantityError:
+                content['message'] = "Attempted to match too large a quantity."
+                return content
+        else:
+            blocked = _blockquant(segments)
+            if blocked:
+                content['message'] == "Quantifying has been blocked in regular expressions."
+                return content
         try:
             if 'i' in segments[2]:
                 test = re.compile(segments[0], re.IGNORECASE)
