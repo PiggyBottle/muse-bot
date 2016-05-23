@@ -27,7 +27,7 @@ class StateManager():
         self.master = config['master']
         self.emailer = emailer.Emailer(config)
         self.nda = ndacademy.NDAcademy(self.emailer,ndapl)
-        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl))
+        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl),self.nda)
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
         self.spamguard = spamguard.SpamGuard()
