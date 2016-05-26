@@ -3,6 +3,13 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import pickle
 
+'''
+Known issue: Bot will return Buffer = None in self.loop() if self.data['feed']
+is so outdated that it doesn't appear in the RSS xml.
+
+If that happens, manually replace self.data['feed'] with a newer string.
+'''
+
 
 
 class ANN():
