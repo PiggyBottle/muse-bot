@@ -7,6 +7,7 @@ import urllib.request
 import urllib.parse
 import usertimes
 import pastee #This is the back up for paste.ee site when it's down
+import copy
 
 
 class Logger():
@@ -23,7 +24,9 @@ class Logger():
                 loaded = True
             except:
                 pass
-    def log(self, content, namelist):
+    def log(self, event, namelist):
+        #In an attempt to fix aliasing issues, content is now a copy of a the IRC event.
+        content = copy.deepcopy(event)
         content['time'] = datetime.datetime.utcnow()
         #aparently there is a possibility of having an IO system interrupted error, so trying out this 'loop-until-succeed' approach
         if content['type'] == 'QUIT':
