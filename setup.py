@@ -36,7 +36,7 @@ def master(reader):
 def tell(reader):
     # Read whether master wants tell function active or not
     active = reader.get('tell', 'active')
-    if active = 'True'
+    if active == 'True':
         return True
     else:
         return False

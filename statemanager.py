@@ -50,7 +50,7 @@ class StateManager():
             self.trackers.update_namelist(content)
 
         message = content['message']
-        if config['tell'] == True:
+        if self.config['tell'] == True:
             if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
                 return self.tell.write(content)
             if content['type'] == 'PRIVMSG':
