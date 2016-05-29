@@ -33,6 +33,14 @@ def master(reader):
     master = reader.get('master', 'nick')
     return master
 
+def tell(reader):
+    # Read whether master wants tell function active or not
+    active = reader.get('tell', 'active')
+    if active = 'True'
+        return True
+    else:
+        return False
+
 def main():
     # Create the config reading object
     reader = configparser.ConfigParser()
@@ -41,7 +49,8 @@ def main():
     botname,botpass = server(reader)
     emailaddr,emailpass = email(reader)
     masternick = master(reader)
-    configs = {'name':botname,'password':botpass, 'email':{'address':emailaddr,'password':emailpass}, 'master':masternick, 'channels':chan}
+    tells = tell(reader)
+    configs = {'name':botname,'password':botpass, 'email':{'address':emailaddr,'password':emailpass}, 'master':masternick, 'channels':chan, 'tell': tells}
     return(configs)
 
 if __name__ == '__main__':

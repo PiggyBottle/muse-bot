@@ -77,5 +77,6 @@ class Trackers(threading.Thread):
             self.twitter.run()
             self.ann.run()
             self.animetiming.check_website(21600)
+            self.nda.check_attendance(self.namelist)
 
 

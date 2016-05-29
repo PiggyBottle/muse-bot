@@ -26,7 +26,7 @@ class StateManager():
         self.annpl = annpl
         self.master = config['master']
         self.emailer = emailer.Emailer(config)
-        self.nda = ndacademy.NDAcademy(self.emailer,ndapl)
+        self.nda = ndacademy.NDAcademy(self.emailer,ndapl, self.irc)
         self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl),self.nda)
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl)
@@ -50,14 +50,13 @@ class StateManager():
             self.trackers.update_namelist(content)
 
         message = content['message']
-        '''
-        if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
-            return self.tell.write(content)
-        if content['type'] == 'PRIVMSG':
-            tells, buffer = self.tell.check(content)
-            if tells:
-                return buffer
-        '''
+        if config['tell'] == True:
+            if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
+                return self.tell.write(content)
+            if content['type'] == 'PRIVMSG':
+                tells, buffer = self.tell.check(content)
+                if tells:
+                    return buffer
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming(self.dpl)
             content['message'] = a.execute(message[7:])
