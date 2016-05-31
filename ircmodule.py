@@ -4,6 +4,7 @@ import sys
 import queue
 import time
 import pickle
+import re
 
 class IRC(threading.Thread):
     def __init__(self, config):
@@ -92,7 +93,7 @@ class IRC(threading.Thread):
                         pong = 'PONG ' + text.split()[1] + '\r\n'
                         self.irc.send(pong.encode())    #returns 'PONG' back to the server (prevents pinging out!)
                     else:
-                        formatted_text = self.formatter(text)
+                        formatted_text = self.formatter1(text)
                         if not formatted_text['type'] == None:
                             self.inputs.put(formatted_text)
     def send(self, content):
@@ -164,3 +165,81 @@ class IRC(threading.Thread):
         else:
             content['channel'], content['type'] = (None,None)
         return content
+    def formatter1(self,text):
+        content = {'private_messaged':False}
+        expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#.*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s=\s(#.*?)\s:(.*)))'
+        formatted_text = re.split(expression, text)
+
+        #return nothing if unable to find match
+        if len(formatted_text) == 1:
+            content['channel'],content['type'] = (None,None)
+            return content
+
+        #Begin checking each case
+
+        #NICK
+        if formatted_text[16] == 'NICK':
+            content['type'] = 'NICK'
+            content['channel'] = None
+            content['name'] = formatted_text[1] #old nick
+            content['message'] = formatted_text[17]#new nick
+            return content
+
+        #KICK
+        elif formatted_text[19] == 'KICK':
+            content['type'] = 'KICK'
+            content['channel'] = formatted_text[20]
+            content['name'] = formatted_text[21]
+            content['message'] = 'was kicked by %s' %(formatted_text[1])
+            if content['name'] == self.botnick:
+                #:SoraSky!~sora@always.online-never.available KICK #nanodesu kick_me_pls :test
+                text = 'JOIN '+content['channel']+'\n'
+                self.irc.send(text.encode())
+            return content
+
+        #JOIN
+        elif formatted_text[23] == 'JOIN':
+            content['type'] = 'JOIN'
+            content['channel'] = formatted_text[24]
+            content['name'] = formatted_text[1]
+            content['message'] = ''
+            return content
+
+        #PART
+        elif formatted_text[13] == 'PART':
+            content['type'] = 'PART'
+            content['channel'] = formatted_text[14]
+            content['name'] = formatted_text[1]
+            content['message'] = ''
+            return content
+
+        #QUIT
+        elif formatted_text[11] == 'QUIT':
+            content['type'] = 'QUIT'
+            content['message'] = ''
+            content['name'] = formatted_text[1]
+            content['channel'] = self.channel #It doesn't matter
+            return content
+
+        #PRIVMSG
+        elif formatted_text[7] == 'PRIVMSG':
+            content['type'] = 'PRIVMSG'
+            content['message'] = formatted_text[9]
+            content['name'] = formatted_text[1]
+            content['channel'] = formatted_text[8]
+            if not content['channel'].startswith('#'):
+                content['private_messaged'] = True
+            return content
+
+        #NAMELIST
+        elif formatted_text[26] == '353':
+            content['private_messaged'] = True
+            content['type'] = 'NAMELIST'
+            content['channel'] = formatted_text[27]
+            content['message'] = formatted_text[28]
+            content['name'] = ''
+            return content
+
+
+
+
