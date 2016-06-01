@@ -12,6 +12,7 @@ import tell
 import emailer
 import regex
 import ndacademy
+import japanesehelper
 
 class StateManager():
     def __init__(self, config, irc, dpl, lpl, tpl, annpl, ndapl):
@@ -33,6 +34,7 @@ class StateManager():
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.regex = regex.Regex(self.logger)
+        self.japanesehelper = japanesehelper.JapaneseHelper()
 
     def main(self, content):
 
@@ -149,3 +151,8 @@ class StateManager():
             return content
         elif message.startswith ('s/'):
             return self.regex.replace(content)
+        elif message.startswith('$tatoeba '):
+            return self.japanesehelper.tatoeba(content)
+
+
+        
