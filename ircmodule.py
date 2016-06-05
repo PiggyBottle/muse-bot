@@ -168,7 +168,7 @@ class IRC(threading.Thread):
     def formatter1(self,text):
         content = {'private_messaged':False}
         #https://regex101.com/r/hF9mD0/2
-        expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#.*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s=\s(#.*?)\s:(.*)))'
+        expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#.*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s.\s(#.*?)\s:(.*)))'
         formatted_text = re.split(expression, text)
 
         #return nothing if unable to find match
