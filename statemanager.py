@@ -149,7 +149,7 @@ class StateManager():
             self.emailer.send([message.split()[1]],[],['viorama@gmail.com'],'Confirmation of receipt of your ND Academy application',self.emailer.get_template('emails/NDAtemplate.txt'))
             content['message'] = 'Email sent!'
             return content
-        elif message.startswith ('s/'):
+        elif message.startswith ('s/') and content['private_messaged'] == False:
             return self.regex.replace(content)
         elif message.startswith('$tatoeba '):
             return self.japanesehelper.tatoeba(content)
