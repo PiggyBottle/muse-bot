@@ -28,6 +28,12 @@ def email(reader):
     emailpass = reader.get('email', 'password')
     return email,emailpass
 
+def sql(reader):
+    #Read the sql username and password for access to the site
+    username = reader.get('sql', 'username')
+    password = reader.get('sql', 'password')
+    return username,password
+
 def master(reader):
     # Read the nickname of the bot's master
     master = reader.get('master', 'nick')
@@ -50,7 +56,8 @@ def main():
     emailaddr,emailpass = email(reader)
     masternick = master(reader)
     tells = tell(reader)
-    configs = {'name':botname,'password':botpass, 'email':{'address':emailaddr,'password':emailpass}, 'master':masternick, 'channels':chan, 'tell': tells}
+    sqluser,sqlpassword = sql(reader)
+    configs = {'name':botname,'password':botpass, 'email':{'address':emailaddr,'password':emailpass}, 'master':masternick, 'channels':chan, 'tell': tells, 'sql':{'user':sqluser,'password':sqlpassword}}
     return(configs)
 
 if __name__ == '__main__':

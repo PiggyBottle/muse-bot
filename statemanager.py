@@ -30,7 +30,7 @@ class StateManager():
         self.nda = ndacademy.NDAcademy(self.emailer,ndapl, self.irc)
         self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl),self.nda)
         self.trackers.start()
-        self.logger = logger.Logger(self.dpl, self.lpl)
+        self.logger = logger.Logger(self.dpl, self.lpl, config)
         self.spamguard = spamguard.SpamGuard()
         self.tell = tell.Tell()
         self.regex = regex.Regex(self.logger)

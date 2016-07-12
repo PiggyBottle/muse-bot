@@ -7,13 +7,15 @@ import urllib.request
 import urllib.parse
 import usertimes
 import pastee #This is the back up for paste.ee site when it's down
+import MySQLdb
 import copy
 
 
 class Logger():
-    def __init__(self,dpl,lpl):
+    def __init__(self,dpl,lpl,config):
         self.dpl = dpl
         self.lpl = lpl
+        self.config = config
         self.empty_time_box = '[' + (' ' * 18) + '|\r\n'
         loaded = False
         while loaded == False:
@@ -95,6 +97,34 @@ class Logger():
                 log_year = time_year
             log = buffer + log
         log = '[----%s.%s.%d----|\r\n' %(log_date,log_month,log_year) + log
+
+        ###This is for MySQL
+        db = MySQLdb.connect('localhost', self.config['sql']['user'], self.config['sql']['password'], 'irclog',charset='utf8')
+
+        cursor = db.cursor()
+
+        sql = "INSERT INTO irclog_irclog (content) VALUES (%s)"
+
+        succeeded = False
+        try:
+            cursor.execute(sql,[log])
+            db.commit()
+            succeeded = True
+        except Exception as e:
+            db.rollback()
+            print('failed. Exception: ' + str(e))
+            db.close()
+
+        if succeeded:
+            cursor.execute('SELECT LAST_INSERT_ID()')
+            results = cursor.fetchall()
+            content['message'] = 'http://muse-chan.flu.cc/irclog/'+ str(results[0][0])
+            db.close()
+            return content
+
+        ###########
+
+        ###This is for paste.ee client
         '''
         a = {'key':'808f1be384f08c1d10806809193fe66b','description':'test', 'paste':log}
         json.dumps(a)
@@ -109,15 +139,24 @@ class Logger():
         content['message'] = json.loads(response)['paste']['raw']
         return content
         '''
+        ##########
+        
+        ###This is for pastee client
+        '''
         client = pastee.PasteClient()
         content['message'] = str(client.paste(log.encode()))
         return content
+        '''
+        ##########
+
+        ###This is for pastebin
         '''
         f = open(self.logstxt, 'r')
         a = self.pastebin.paste('2333bedc76cd701be6a8526402393da6',f.read(),api_user_key=self.pastebin.generate_user_key('2333bedc76cd701be6a8526402393da6','SoraSky','123456'),paste_private = 'public')
         f.close()
         return a
         '''
+        ##########
     def display_time(self,time,tz):
         time += datetime.timedelta(hours=tz)
         if time.hour < 10:
