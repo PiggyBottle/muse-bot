@@ -1,4 +1,6 @@
 import pickle
+import math
+import time
 
 
 class Tell():
@@ -14,7 +16,7 @@ class Tell():
         if name == '':
             return
         message = content['message'].split(' ',2)[2]
-        tell = {'message':message,'sender':content['name']}
+        tell = {'message':message,'sender':content['name'],'time':int(time.time())}
         if name not in self.data.keys():
             self.data[name.lower()] = []
         self.data[name.lower()].append(tell)
@@ -31,7 +33,7 @@ class Tell():
         for name in self.data.keys():
             if name in content['name'].lower():
                 for tell in self.data[name]:
-                    buffer += newline + '%s : %s' %(tell['sender'],tell['message'])
+                    buffer += newline + '%s : %s %s' %(tell['sender'],tell['message'], self.generateTimeDelta(tell['time'],time.time()))
                     unread_messages += 1
                     if not name in names_to_delete:
                         names_to_delete.append(name)
@@ -45,4 +47,32 @@ class Tell():
             return True,content
         else:
             return False,content
+    def generateTimeDelta(self, timeSent, timeChecked):
+        secondsPassed = timeChecked - timeSent
+        if secondsPassed < 60:
+            duration = str(math.floor(secondsPassed))
+            durationType = 'second'
+            return '(%s %s%s ago)' %(duration, durationType, self.checkIfValueIsPlural(duration))
+        minutesPassed = secondsPassed / 60.0
+        if minutesPassed < 60:
+            duration = str(math.floor(minutesPassed))
+            durationType = 'minute'
+            return '(%s %s%s ago)' %(duration, durationType, self.checkIfValueIsPlural(duration))
+        hoursPassed = minutesPassed / 60.0
+        if hoursPassed < 24:
+            duration = str(math.floor(hoursPassed))
+            durationType = 'hour'
+            return '(%s %s%s ago)' %(duration, durationType, self.checkIfValueIsPlural(duration))
+        daysPassed = hoursPassed / 24.0
+        if True:
+            duration = str(math.floor(daysPassed))
+            durationType = 'day'
+            return '(%s %s%s ago)' %(duration, durationType, self.checkIfValueIsPlural(duration))
+
+    def checkIfValueIsPlural(self,number):
+        if int(number) > 1:
+            return 's'
+        else:
+            return ''
+        
 
