@@ -167,8 +167,8 @@ class IRC(threading.Thread):
         return content
     def formatter1(self,text):
         content = {'private_messaged':False}
-        #https://regex101.com/r/hF9mD0/2
-        expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#.*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s.\s(#.*?)\s:(.*)))'
+        #https://regex101.com/r/hF9mD0/3
+        expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#\S*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s.\s(#.*?)\s:(.*)))'
         formatted_text = re.split(expression, text)
 
         #return nothing if unable to find match
@@ -209,7 +209,7 @@ class IRC(threading.Thread):
         #PART
         elif formatted_text[13] == 'PART':
             content['type'] = 'PART'
-            content['channel'] = formatted_text[14].split()[0]
+            content['channel'] = formatted_text[14]
             content['name'] = formatted_text[1]
             content['message'] = ''
             return content
