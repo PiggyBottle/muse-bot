@@ -32,7 +32,7 @@ class StateManager():
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl, config)
         self.spamguard = spamguard.SpamGuard()
-        self.tell = tell.Tell()
+        self.tell = tell.Tell(self.irc)
         self.regex = regex.Regex(self.logger)
         self.japanesehelper = japanesehelper.JapaneseHelper()
 
@@ -53,12 +53,10 @@ class StateManager():
 
         message = content['message']
         if self.config['tell'] == True:
+            if content['type'] == 'PRIVMSG':
+                self.tell.check(content)
             if (message.startswith('!tell ') or message.startswith('$tell')) and len(message) > 6:
                 return self.tell.write(content)
-            if content['type'] == 'PRIVMSG':
-                tells, buffer = self.tell.check(content)
-                if tells:
-                    return buffer
         if message.startswith('$anime ') and len(message) > 7 and self.commands['anime'] == True:
             a = animetiming.AnimeTiming(self.dpl)
             content['message'] = a.execute(message[7:])
@@ -155,4 +153,4 @@ class StateManager():
             return self.japanesehelper.tatoeba(content)
 
 
-        
+
