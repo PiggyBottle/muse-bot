@@ -4,7 +4,8 @@ import time
 
 
 class Tell():
-    def __init__(self):
+    def __init__(self, irc):
+        self.irc = irc
         f = open('tell.pickle', 'rb')
         self.data = pickle.load(f)
         f.close()
@@ -44,9 +45,9 @@ class Tell():
             f = open('tell.pickle','wb')
             pickle.dump(self.data,f)
             f.close()
-            return True,content
+            self.irc.send(content)
         else:
-            return False,content
+            pass
     def generateTimeDelta(self, timeSent, timeChecked):
         secondsPassed = timeChecked - timeSent
         if secondsPassed < 60:
