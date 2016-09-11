@@ -1,6 +1,7 @@
 import pickle
 import math
 import time
+import copy
 
 
 class Tell():
@@ -26,7 +27,8 @@ class Tell():
         f.close()
         content['message'] = 'Message registered.'
         return content
-    def check(self,content):
+    def check(self,contentToBeCopied):
+        content = copy.deepcopy(contentToBeCopied)
         buffer = '%s, you have unread messages.' %(content['name'])
         unread_messages = 0
         names_to_delete = []
