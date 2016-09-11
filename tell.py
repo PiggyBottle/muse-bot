@@ -17,7 +17,7 @@ class Tell():
             return
         message = content['message'].split(' ',2)[2]
         tell = {'message':message,'sender':content['name'],'time':int(time.time())}
-        if name not in self.data.keys():
+        if name.lower() not in self.data.keys():
             self.data[name.lower()] = []
         self.data[name.lower()].append(tell)
         f = open('tell.pickle', 'wb')
@@ -74,5 +74,5 @@ class Tell():
             return 's'
         else:
             return ''
-        
+
 
