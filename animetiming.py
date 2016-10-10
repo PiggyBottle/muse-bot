@@ -116,6 +116,8 @@ class AnimeTiming():
                     pass
                 elif re.search(r'<td class="schedule-page-show">.*>(.*)</a>', line) != None:
                     title = h.unescape(re.search(r'<td class="schedule-page-show">.*>(.*)</a>', line).group(1))
+                elif re.search(r'<td class="schedule-show">(.*)</td>', line) != None:
+                    title = h.unescape(re.search(r'<td class="schedule-show">(.*)</td>', line).group(1))
                 elif re.search(r'<h2 class="weekday">(.*)</h2>',line) != None:
                     weekday = h.unescape(re.search(r'<h2 class="weekday">(.*)</h2>',line).group(1))
                     if weekday == 'To be scheduled':
