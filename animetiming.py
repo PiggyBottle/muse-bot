@@ -4,6 +4,7 @@ import re
 from html.parser import HTMLParser
 import urllib.request
 import time
+import cfscrape
 
 
 class AnimeTiming():
@@ -11,6 +12,7 @@ class AnimeTiming():
         self.dpl = dpl
         #Unix time when HorribleSubs' website was last checked.
         self.last_checked_HS = 0
+        self.scraper = cfscrape.create_scraper()
     def execute(self, w):
         self.word = w
         self.time_left(self.word)
@@ -82,9 +84,13 @@ class AnimeTiming():
 
             #Get data from HorribleSubs's site
 
+            '''
             req = urllib.request.Request(url, headers = headers)
             resp = urllib.request.urlopen(req)
             respData = resp.read().decode()
+            '''
+            resp = self.scraper.get(url).content
+            respData = resp.decode()
             string = respData.split('\n')
             anime_showtimes = self.parseHTML(string,timezoneoffset)
             f = open(self.dpl,'rb')
