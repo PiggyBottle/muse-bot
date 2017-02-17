@@ -57,10 +57,17 @@ class IRC(threading.Thread):
             self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.irc.connect((self.server, 6667))
             self.connect()
+            count = 0
             while True:
                 decode_success = False
                 try:
                     text=self.irc.recv(2040)  #receive the text
+                    if count < 4:
+                        c = "PRIVMSG nickserv :identify %s\r\n" %(self.config['password'])
+                        self.irc.send(c.encode())
+                        for a in self.config['channels']:
+                            self.irc.send(('JOIN %s %s\n' %(a['name'], a['password'])).encode())
+                        count += 1
                 except:
                     self.disconnected = True
                     break
@@ -167,7 +174,7 @@ class IRC(threading.Thread):
         return content
     def formatter1(self,text):
         content = {'private_messaged':False}
-        #https://regex101.com/r/hF9mD0/3
+        #https://regex101.com/r/hF9mD0/2
         expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#\S*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s.\s(#.*?)\s:(.*)))'
         formatted_text = re.split(expression, text)
 
@@ -240,7 +247,3 @@ class IRC(threading.Thread):
             content['message'] = formatted_text[28]
             content['name'] = ''
             return content
-
-
-
-
