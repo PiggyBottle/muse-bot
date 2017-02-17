@@ -56,6 +56,7 @@ class IRC(threading.Thread):
         while True:
             self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.irc.connect((self.server, 6667))
+            time.sleep(10)
             self.connect()
             count = 0
             while True:
@@ -111,67 +112,7 @@ class IRC(threading.Thread):
         elif content['private_messaged']:
             text = str(content['type'] + ' ' + content['name'] + ' :' + content['message'] + '\r\n')
         self.irc.send(text.encode())
-    def formatter(self,rawtext):
-        text = rawtext.split(':', 2)
-        content = {}
-        try:    #to circumvent the problem of system messages that do not have enough ':'s
-            content['name'] = text[1].split('!')[0]
-            content['message'] = text[2]
-        except:
-            pass
-        content['private_messaged'] = False
-        if 'PRIVMSG' in text[1]:
-            content['type'] = 'PRIVMSG'
-            content['channel'] = text[1].split('PRIVMSG ',1)[1].split(' ',1)[0]
-            if not content['channel'].startswith('#'):
-                content['private_messaged'] = True
-        elif 'JOIN' in text[1]:
-            content['type'] = 'JOIN'   #when a person joins a channel, the channel is reflected in text[2], after the ':', hence get channel from content['message']
-            content['channel'] = text[2]
-            content['message'] = ''
-        elif 'QUIT' in text[1]:
-            #:SoraSky!~sora@always.online-never.available QUIT :Quit: leaving
-            content['type'] = 'QUIT'
-            content['message'] = ''
-            content['channel'] = self.channel
-        elif 'PART' in text[1]:
-            content['type'] = 'PART'
-            content['channel'] = text[1].split('PART ')[1].split(' ')[0]
-            content['name'] = text[1].split('!')[0]
-            content['message'] = ''
-        elif 'NICK' in text[1]:
-            content['type'] = 'NICK'   #old name is content['name'], new name is content['message']
-            content['channel'] = None
-        elif 'KICK' in text[1]:
-            #content['name'] is the guy who was kicked, and the kicker is in the message
-            content['type'] = 'KICK'
-            content['message'] = 'was kicked by %s' %(content['name'])
-            content['channel'] = text[1].split('KICK ')[1].split(' ')[0]
-            content['name'] = text[1].split('KICK ')[1].split(' ')[1]
-            if content['name'] == self.botnick:
-                #:SoraSky!~sora@always.online-never.available KICK #nanodesu kick_me_pls :test
-                text = 'JOIN '+content['channel']+'\n'
-                self.irc.send(text.encode())
-        elif 'MODE' in text[1]:     #temporary placeholder
-            content['type'] = 'MODE'
-            content['message'] = ''
-            content['name'] = ''
-            content['channel'] = None
-        elif '353' in text[1]:
-            #There are cases where incomplete messages come in and break the bot, so forcing a try-except function
-            try:
-                if text[1].split()[1] == '353':
-                    content['type'] = 'NAMELIST'
-                    content['channel'] = text[1].split()[4]
-                    content['message'] = text[2]
-                    content['name'] = ''
-                    #private message was used to make sure it doesn't get logged
-                    content['private_messaged'] = True
-            except:
-                pass
-        else:
-            content['channel'], content['type'] = (None,None)
-        return content
+
     def formatter1(self,text):
         content = {'private_messaged':False}
         #https://regex101.com/r/hF9mD0/2
