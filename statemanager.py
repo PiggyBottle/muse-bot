@@ -11,7 +11,6 @@ import trackers
 import tell
 import emailer
 import regex
-import ndacademy
 import japanesehelper
 
 class StateManager():
@@ -27,8 +26,7 @@ class StateManager():
         self.annpl = annpl
         self.master = config['master']
         self.emailer = emailer.Emailer(config)
-        self.nda = ndacademy.NDAcademy(self.emailer,ndapl, self.irc)
-        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl),self.nda)
+        self.trackers = trackers.Trackers(self.irc,self.tpl,self.annpl,self.config['master'],animetiming.AnimeTiming(self.dpl))
         self.trackers.start()
         self.logger = logger.Logger(self.dpl, self.lpl, config)
         self.spamguard = spamguard.SpamGuard()
@@ -151,6 +149,3 @@ class StateManager():
             return self.regex.replace(content)
         elif message.startswith('$tatoeba '):
             return self.japanesehelper.tatoeba(content)
-
-
-

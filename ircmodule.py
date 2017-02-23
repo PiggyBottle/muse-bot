@@ -101,7 +101,7 @@ class IRC(threading.Thread):
                         pong = 'PONG ' + text.split()[1] + '\r\n'
                         self.irc.send(pong.encode())    #returns 'PONG' back to the server (prevents pinging out!)
                     else:
-                        formatted_text = self.formatter1(text)
+                        formatted_text = self.formatter(text)
                         if not formatted_text['type'] == None:
                             self.inputs.put(formatted_text)
     def send(self, content):
@@ -113,7 +113,7 @@ class IRC(threading.Thread):
             text = str(content['type'] + ' ' + content['name'] + ' :' + content['message'] + '\r\n')
         self.irc.send(text.encode())
 
-    def formatter1(self,text):
+    def formatter(self,text):
         content = {'private_messaged':False}
         #https://regex101.com/r/hF9mD0/2
         expression = '^:(.*?)((!.*?@(.*?)\s(((PRIVMSG)\s(.*?)\s:(.*))|((QUIT)\s:)|((PART)\s(#\S*))|((NICK)\s:(.*))|((KICK)\s(#.*?)\s(.*?)\s:)|((JOIN)\s:(#.*))))|(\s(353)\s.*?\s.\s(#.*?)\s:(.*)))'

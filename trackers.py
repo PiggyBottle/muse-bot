@@ -7,9 +7,9 @@ import time
 
 
 class Trackers(threading.Thread):
-    def __init__(self, irc, tpl, annpl, master, animetiming, nda):
+    def __init__(self, irc, tpl, annpl, master, animetiming):
         threading.Thread.__init__(self)
-        self.irc, self.tpl, self.annpl, self.master, self.animetiming, self.nda = irc, tpl, annpl, master, animetiming, nda
+        self.irc, self.tpl, self.annpl, self.master, self.animetiming = irc, tpl, annpl, master, animetiming
         self.twitter = twitter.Twitter(self.irc,self.tpl)
         self.ann = ann.ANN(self.irc,self.annpl)
         self.master_online_status = False
@@ -77,6 +77,3 @@ class Trackers(threading.Thread):
             self.twitter.run()
             self.ann.run()
             self.animetiming.check_website(21600)
-            self.nda.check_attendance(self.namelist)
-
-
